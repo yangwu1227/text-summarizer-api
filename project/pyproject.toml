@@ -1,0 +1,25 @@
+[project]
+name = "text-summarizer-api"
+description = "An asynchronous text summarization API built with FastAPI"
+dependencies = [
+    "fastapi>=0.112.1",
+    "uvicorn>=0.30.6",
+]
+requires-python = ">3.11"
+readme = "README.md"
+
+[tool.pdm]
+distribution = false
+
+[tool.pdm.dev-dependencies]
+test = [
+    "pytest>=8.3.2",
+    "pytest-cov>=5.0.0",
+]
+notebook = [
+    "ipykernel>=6.29.5",
+]
+lint = [
+    "flake8>=7.1.1",
+    "black>=24.8.0",
+]
