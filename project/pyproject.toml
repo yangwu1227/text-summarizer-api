@@ -4,6 +4,7 @@ description = "An asynchronous text summarization API built with FastAPI"
 dependencies = [
     "fastapi>=0.112.1",
     "uvicorn>=0.30.6",
+    "pydantic-settings>=2.5.2",
 ]
 requires-python = ">3.11"
 readme = "README.md"
