@@ -1,0 +1,15 @@
+name: 'text-summarizer-api'
+
+services:
+  web:
+    build: ./project
+    container_name: dev-api
+    command: uvicorn app.main:app --reload --workers 1 --host 0.0.0.0 --port 8000
+    volumes:
+      - ./project/app:/opt/project/app
+      - ./project/tests:/opt/project/tests
+    ports:
+      - 8004:8000
+    environment:
+      - ENVIRONMENT=dev
+      - TESTING=0
