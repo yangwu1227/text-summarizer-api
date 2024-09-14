@@ -22,7 +22,7 @@ COPY pyproject.toml pdm.lock ./
 # 3. --check: validate whether the lock is up to date
 RUN pip install pdm==$PDM_VERSION && pdm install --check --no-editable -G test
 
-FROM python-base AS production
+FROM python-base AS development
 
 # Install system dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends \
