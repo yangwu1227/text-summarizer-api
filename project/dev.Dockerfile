@@ -11,9 +11,6 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     # Disable pdm update check
     PDM_CHECK_UPDATE=0
 
-# Create an unprivileged user and group to run the application
-RUN addgroup --system api && adduser --system --ingroup api api-user
-
 FROM python-base AS build-stage
 
 # Install pdm 
@@ -44,5 +41,4 @@ COPY tests ./tests
 COPY entrypoint.sh ./
 RUN chmod +x entrypoint.sh
 
-USER api-user
 ENTRYPOINT ["./entrypoint.sh"]
