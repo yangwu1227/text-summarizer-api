@@ -24,6 +24,7 @@ RUN pip install pdm==$PDM_VERSION && pdm install --check --no-editable -G test
 
 FROM python-base AS production
 
+# Install system dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends \
     netcat-traditional \
     gcc \
@@ -31,14 +32,12 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
-# Retrieve packages from build stage
-COPY --from=build-stage $PROJECT_ROOT_PATH $PROJECT_ROOT_PATH
+# Copy just .venv from the build stage
+COPY --from=build-stage $PROJECT_ROOT_PATH/.venv $PROJECT_ROOT_PATH/.venv
 ENV PATH=${PROJECT_ROOT_PATH}/.venv/bin:$PATH
 WORKDIR $PROJECT_ROOT_PATH
-# Copy source code from local project root onto the container
-COPY app ./app
-COPY tests ./tests
-COPY entrypoint.sh ./
+# Copy all source code from the build context (i.e., the local project directory) onto the container under $PROJECT_ROOT_PATH
+COPY ./ ./
 RUN chmod +x entrypoint.sh
 
 ENTRYPOINT ["./entrypoint.sh"]
