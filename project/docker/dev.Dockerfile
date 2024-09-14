@@ -38,6 +38,6 @@ ENV PATH=${PROJECT_ROOT_PATH}/.venv/bin:$PATH
 WORKDIR $PROJECT_ROOT_PATH
 # Copy all source code from the build context (i.e., the local project directory) onto the container under $PROJECT_ROOT_PATH
 COPY ./ ./
-RUN chmod +x entrypoint.sh
+RUN chmod +x scripts/entrypoint.sh
 
-ENTRYPOINT ["./entrypoint.sh"]
+ENTRYPOINT ["./scripts/entrypoint.sh"]

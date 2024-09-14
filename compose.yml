@@ -5,7 +5,7 @@ services:
   web:
     build:
       context: ./project
-      dockerfile: dev.Dockerfile
+      dockerfile: docker/dev.Dockerfile
     container_name: dev-api
     command: uvicorn app.main:app --reload --workers 1 --host 0.0.0.0 --port 8000
     volumes:
@@ -23,8 +23,8 @@ services:
 
   web-db:
     build:
-      context: ./project/db
-      dockerfile: db.Dockerfile
+      context: ./project
+      dockerfile: docker/db.Dockerfile
     container_name: db
     expose:
       - 5432
