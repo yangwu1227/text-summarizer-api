@@ -11,6 +11,8 @@ services:
     volumes:
       - ./project/app:/opt/project/app
       - ./project/tests:/opt/project/tests
+      - ./project/pyproject.toml:/opt/project/pyproject.toml
+      - ./project/migrations:/opt/project/migrations
     ports:
       - 8004:8000
     environment:
