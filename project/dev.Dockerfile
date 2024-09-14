@@ -11,22 +11,27 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     # Disable pdm update check
     PDM_CHECK_UPDATE=0
 
+# Create an unprivileged user and group to run the application
+RUN addgroup --system api && adduser --system --ingroup api api-user
+
 FROM python-base AS build-stage
 
 # Install pdm 
 WORKDIR $PROJECT_ROOT_PATH
 # Copy project toml and lock files onto the container
 COPY pyproject.toml pdm.lock ./
-# 1. --prod: only install production dependencies
+# 1. --G test: install packages in the test group in addition to the default production dependencies
 # 2. --no-editable: all packages to be installed in non-editable mode
 # 3. --check: validate whether the lock is up to date
 RUN pip install pdm==$PDM_VERSION && pdm install --check --no-editable -G test
 
 FROM python-base AS production
 
-RUN apt-get update \
-    && apt-get install -y netcat-traditional gcc postgresql \
-    && apt-get clean \  
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    netcat-traditional \
+    gcc \
+    postgresql \
+    && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
 # Retrieve packages from build stage
@@ -39,4 +44,5 @@ COPY tests ./tests
 COPY entrypoint.sh ./
 RUN chmod +x entrypoint.sh
 
+USER api-user
 ENTRYPOINT ["./entrypoint.sh"]
