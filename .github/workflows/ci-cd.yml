@@ -42,7 +42,7 @@ jobs:
           GH_PAT: ${{ secrets.GH_PAT }}
 
       - name: Pull Existing Docker Image
-        id: pull-docker-image
+        id: pull-existing-docker-image
         run: |
           docker pull ${{ env.IMAGE }}:latest || true
 
@@ -80,11 +80,11 @@ jobs:
           GH_PAT: ${{ secrets.GH_PAT }}
 
       - name: Pull Docker Image from GitHub Registry
-        id: pull-docker-image
+        id: pull-docker-image-from-ghcr
         run: docker pull ${{ env.IMAGE }}:latest || true
 
       - name: Build Heroku Docker Image
-        id: build-heroku-image
+        id: build-heroku-docker-image
         run: |
           docker build \
             --cache-from ${{ env.IMAGE }}:latest \
@@ -93,15 +93,15 @@ jobs:
             ./project
 
       - name: Log in and Push Docker Image to Heroku Registry
-        id: login-and-push-heroku
+        id: login-and-push-heroku-registry
         run: |
           echo ${HEROKU_AUTH_TOKEN} | docker login --username=_ --password-stdin registry.heroku.com
           docker push ${{ env.HEROKU_REGISTRY_IMAGE }}
         env:
           HEROKU_AUTH_TOKEN: ${{ secrets.HEROKU_AUTH_TOKEN }}
 
-      - name: Set Environment Variables
-        id: set-env-vars
+      - name: Set Environment Variables to be Used in Release Step
+        id: set-heroku-env-vars
         run: |
           echo "HEROKU_REGISTRY_IMAGE=${{ env.HEROKU_REGISTRY_IMAGE }}" >> $GITHUB_ENV
           echo "::add-mask::${{ secrets.HEROKU_AUTH_TOKEN }}"  
