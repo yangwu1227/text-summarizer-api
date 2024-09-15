@@ -66,7 +66,7 @@ jobs:
     needs: [publish]
     env:
       HEROKU_APP_NAME: ${{ secrets.HEROKU_APP_NAME }}
-      HEROKU_REGISTRY_IMAGE: registry.heroku.com/${{ secrets.HEROKU_APP_NAME }}/${{ secrets.GH_PACKAGES_IMAGE_NAME }}
+      HEROKU_REGISTRY_IMAGE: registry.heroku.com/${{ secrets.HEROKU_APP_NAME }}/web
 
     steps:
       - name: Checkout Repository
@@ -95,8 +95,8 @@ jobs:
       - name: Log in and Push Docker Image to Heroku Registry
         id: login-and-push-heroku
         run: |
-          docker login --username=_ --password=${HEROKU_AUTH_TOKEN} registry.heroku.com 
-          docker push ${{ env.HEROKU_REGISTRY_IMAGE }}:latest
+          echo ${HEROKU_AUTH_TOKEN} | docker login --username=_ --password-stdin registry.heroku.com
+          docker push ${{ env.HEROKU_REGISTRY_IMAGE }}
         env:
           HEROKU_AUTH_TOKEN: ${{ secrets.HEROKU_AUTH_TOKEN }}
 
