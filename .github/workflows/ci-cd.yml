@@ -11,19 +11,9 @@ on:
       - 'project/pdm.lock'
       - 'project/docker/prod.Dockerfile'
       - '.github/workflows/ci-cd.yml'
-  pull_request:
-    branches:
-      - main
-    paths:
-      - 'project/app/**'
-      - 'project/migrations/**'
-      - 'project/pyproject.toml'
-      - 'project/pdm.lock'
-      - 'project/docker/prod.Dockerfile'
-      - '.github/workflows/ci-cd.yml'
       
 env:
-  IMAGE: ghcr.io/${{ github.repository }}/${{ secrets.GH_PACKAGES_IMAGE_NAME }}
+  IMAGE: ghcr.io/${{ github.repository }}/prod-image
 
 jobs:
   publish:
