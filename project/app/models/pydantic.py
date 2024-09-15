@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import AnyHttpUrl, BaseModel
 
 
 class SummaryPayloadSchema(BaseModel):
@@ -6,7 +6,7 @@ class SummaryPayloadSchema(BaseModel):
     The request body containing the url for which to generate a text summary.
     """
 
-    url: str
+    url: AnyHttpUrl
 
 
 class SummaryResponseSchema(SummaryPayloadSchema):
@@ -15,3 +15,11 @@ class SummaryResponseSchema(SummaryPayloadSchema):
     """
 
     id: int
+
+
+class SummaryUpdatePayloadSchema(SummaryPayloadSchema):
+    """
+    The request body containing the updated summary for updating the text summary.
+    """
+
+    summary: str

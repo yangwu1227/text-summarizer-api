@@ -11,9 +11,7 @@ logger = logging.getLogger("uvicorn")
 def create_app() -> FastAPI:
     application = FastAPI(title="text-summarizer")
     application.include_router(ping.router)
-    application.include_router(
-        summaries.router, prefix="/summaries", tags=["summaries"]
-    )
+    application.include_router(summaries.router, prefix="/summaries", tags=["summaries"])
     return application
 
 

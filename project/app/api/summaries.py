@@ -1,10 +1,14 @@
-from typing import List
+from typing import Annotated, Dict, List
 
-from fastapi import APIRouter
+from fastapi import APIRouter, Path
 
 from app.api import crud
 from app.api.custom_exceptions import SummaryNotFoundException
-from app.models.pydantic import SummaryPayloadSchema, SummaryResponseSchema
+from app.models.pydantic import (
+    SummaryPayloadSchema,
+    SummaryResponseSchema,
+    SummaryUpdatePayloadSchema,
+)
 from app.models.tortoise import SummarySchema
 
 router = APIRouter()
@@ -34,14 +38,14 @@ async def create_summary(payload: SummaryPayloadSchema) -> SummaryResponseSchema
 
 
 @router.get("/{id}/", response_model=SummarySchema)
-async def read_summary(id: int) -> SummarySchema:  # type: ignore
+async def read_summary(id: Annotated[int, Path(title="The ID of the text summary to query", gt=0)]) -> SummarySchema:  # type: ignore
     """
     Retrieve a single summary based on its ID (i.e., primary key).
 
     Parameters
     ----------
     id : int
-        The ID of the summary to retrieve.
+        The ID of the text summary to query; must be greater than 0.
 
     Returns
     -------
@@ -71,3 +75,66 @@ async def read_all_summaries() -> List[SummarySchema]:  # type: ignore
         A list of all the summaries.
     """
     return await crud.get_all()
+
+
+@router.delete("/{id}/", response_model=SummaryResponseSchema)
+async def remove_summary(
+    id: Annotated[int, Path(title="The ID of the text summary to delete", gt=0)]
+) -> Dict:
+    """
+    Delete a single summary based on its ID (i.e., primary key).
+
+    Parameters
+    ----------
+    id : int
+        The ID of the summary to delete; must be greater than 0.
+
+    Returns
+    -------
+    SummaryResponseSchema
+        The retrieved summary response containing an ID and url.
+
+    Raises
+    ------
+    SummaryNotFoundException
+        If the summary with the given ID is not found.
+    """
+    summary = await crud.get(id)
+    # Raise a 404 Not Found error if an id is non-existent
+    if not summary:
+        raise SummaryNotFoundException
+    # Delete the record
+    await crud.delete(id)
+    return summary
+
+
+@router.put("/{id}/", response_model=SummarySchema)
+async def update_summary(
+    id: Annotated[int, Path(title="The ID of the text summary to update", gt=0)],
+    payload: SummaryUpdatePayloadSchema,
+) -> SummarySchema:  # type:ignore
+    """
+    Update a text summary by its ID.
+
+    Parameters
+    ----------
+    id : int
+        The ID of the text summary to update; must be greater than 0.
+    payload : SummaryUpdatePayloadSchema
+        The data to update the summary with, including the new URL and summary text.
+
+    Returns
+    -------
+    SummarySchema
+        The updated summary object if the update is successful.
+
+    Raises
+    ------
+    SummaryNotFoundException
+        If no summary with the specified ID exists.
+    """
+    summary = await crud.put(id, payload)
+    # Raise a 404 Not Found error if an id is non-existent
+    if not summary:
+        raise SummaryNotFoundException
+    return summary
