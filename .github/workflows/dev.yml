@@ -13,7 +13,8 @@ on:
       - '.github/workflows/dev.yml'
       
 env:
-  IMAGE: ghcr.io/${{ github.repository }}/dev-image
+  MODE: dev
+  IMAGE: ghcr.io/${{ github.repository }}/${{ env.MODE }}-image
 
 jobs:
   build-and-test:
@@ -42,7 +43,7 @@ jobs:
           docker build \
             --cache-from ${{ env.IMAGE }}:latest \
             --tag ${{ env.IMAGE }}:latest \
-            --file ./project/docker/prod.Dockerfile \
+            --file ./project/docker/${{ env.MODE }}.Dockerfile \
             ./project
 
       - name: Run Docker Container
