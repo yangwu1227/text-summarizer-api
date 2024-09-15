@@ -46,6 +46,11 @@ jobs:
             --file ./project/docker/${{ env.MODE }}.Dockerfile \
             ./project
 
+      - name: Push Docker Image to GitHub Registry
+        id: push-docker-image
+        run: |
+          docker push ${{ env.IMAGE }}:latest
+
       - name: Run Docker Container
         id: run-docker-container
         run: |
