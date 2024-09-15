@@ -14,7 +14,7 @@ on:
       
 env:
   MODE: prod
-  IMAGE: ghcr.io/${{ github.repository }}/${{ env.MODE }}-image
+  IMAGE: ghcr.io/${{ github.repository }}/prod-image
 
 jobs:
   publish:

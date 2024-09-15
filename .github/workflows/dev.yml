@@ -14,7 +14,7 @@ on:
       
 env:
   MODE: dev
-  IMAGE: ghcr.io/${{ github.repository }}/${{ env.MODE }}-image
+  IMAGE: ghcr.io/${{ github.repository }}/dev-image
 
 jobs:
   build-and-test:
