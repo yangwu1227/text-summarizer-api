@@ -1,7 +1,10 @@
 import json
 from sys import maxsize
-import pytest 
+
+import pytest
+
 from app.api.custom_exceptions import SummaryNotFoundException
+
 
 class TestSummary(object):
     """

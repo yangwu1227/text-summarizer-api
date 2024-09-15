@@ -1,6 +1,7 @@
 import logging
-from typing import Optional
 from functools import lru_cache
+from typing import Optional
+
 from pydantic import AnyUrl, Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 

@@ -1,10 +1,11 @@
 from typing import List
+
 from fastapi import APIRouter
 
-from app.api import crud 
+from app.api import crud
+from app.api.custom_exceptions import *
 from app.models.pydantic import SummaryPayloadSchema, SummaryResponseSchema
 from app.models.tortoise import SummarySchema
-from app.api.custom_exceptions import *
 
 router = APIRouter()
 

@@ -1,13 +1,12 @@
-import os 
+import os
 from typing import Generator
 
-import pytest 
-from starlette.testclient import TestClient 
-from pydantic import Field
+import pytest
+from starlette.testclient import TestClient
 from tortoise.contrib.fastapi import register_tortoise
 
+from app.config import Settings, get_settings
 from app.main import create_app
-from app.config import get_settings, Settings 
 
 TestClientGenerator = Generator[TestClient, None, None]
 
