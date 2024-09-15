@@ -1,14 +1,16 @@
 from typing import List
+
 from fastapi import APIRouter
 
-from app.api import crud 
+from app.api import crud
+from app.api.custom_exceptions import SummaryNotFoundException
 from app.models.pydantic import SummaryPayloadSchema, SummaryResponseSchema
 from app.models.tortoise import SummarySchema
-from app.api.custom_exceptions import *
 
 router = APIRouter()
 
-@router.post('/', response_model=SummaryResponseSchema, status_code=201)
+
+@router.post("/", response_model=SummaryResponseSchema, status_code=201)
 async def create_summary(payload: SummaryPayloadSchema) -> SummaryResponseSchema:
     """
     Create a new summary based on the provided payload.
@@ -17,7 +19,7 @@ async def create_summary(payload: SummaryPayloadSchema) -> SummaryResponseSchema
     ----------
     payload : SummaryPayloadSchema
         The payload containing a valid url required to create the new summary.
-        
+
     Returns
     -------
     SummaryResponseSchema
@@ -30,8 +32,9 @@ async def create_summary(payload: SummaryPayloadSchema) -> SummaryResponseSchema
     )
     return response
 
-@router.get('/{id}/', response_model=SummarySchema)
-async def read_summary(id: int) -> SummarySchema: # type: ignore
+
+@router.get("/{id}/", response_model=SummarySchema)
+async def read_summary(id: int) -> SummarySchema:  # type: ignore
     """
     Retrieve a single summary based on its ID (i.e., primary key).
 
@@ -56,8 +59,9 @@ async def read_summary(id: int) -> SummarySchema: # type: ignore
         raise SummaryNotFoundException
     return summary
 
-@router.get('/', response_model=List[SummarySchema]) # type: ignore
-async def read_all_summaries() -> List[SummarySchema]: # type: ignore
+
+@router.get("/", response_model=List[SummarySchema])  # type: ignore
+async def read_all_summaries() -> List[SummarySchema]:  # type: ignore
     """
     Retrieve all summaries.
 
