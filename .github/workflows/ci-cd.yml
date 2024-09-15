@@ -31,19 +31,23 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - id: checkout-repo
+      - name: Checkout Repository
+        id: checkout-repo
         uses: actions/checkout@v4
 
-      - id: login-ghcr
+      - name: Log in to GitHub Container Registry
+        id: login-ghcr
         run: echo "${GH_PAT}" | docker login ghcr.io -u "${{ github.actor }}" --password-stdin
         env:
           GH_PAT: ${{ secrets.GH_PAT }}
 
-      - id: pull-docker-image
+      - name: Pull Existing Docker Image
+        id: pull-docker-image
         run: |
           docker pull ${{ env.IMAGE }}:latest || true
 
-      - id: build-docker-image
+      - name: Build Docker Image
+        id: build-docker-image
         run: |
           docker build \
             --cache-from ${{ env.IMAGE }}:latest \
@@ -51,7 +55,8 @@ jobs:
             --file ./project/docker/prod.Dockerfile \
             ./project
 
-      - id: push-docker-image
+      - name: Push Docker Image to GitHub Registry
+        id: push-docker-image
         run: |
           docker push ${{ env.IMAGE }}:latest
 
@@ -64,18 +69,22 @@ jobs:
       HEROKU_REGISTRY_IMAGE: registry.heroku.com/${{ secrets.HEROKU_APP_NAME }}/web
 
     steps:
-      - id: checkout-repo
+      - name: Checkout Repository
+        id: checkout-repo
         uses: actions/checkout@v4
 
-      - id: login-ghcr
+      - name: Log in to GitHub Container Registry
+        id: login-ghcr
         run: echo "${GH_PAT}" | docker login ghcr.io -u "${{ github.actor }}" --password-stdin
         env:
           GH_PAT: ${{ secrets.GH_PAT }}
 
-      - id: pull-docker-image
+      - name: Pull Docker Image from GitHub Registry
+        id: pull-docker-image
         run: docker pull ${{ env.IMAGE }}:latest || true
 
-      - id: build-heroku-image
+      - name: Build Heroku Docker Image
+        id: build-heroku-image
         run: |
           docker build \
             --cache-from ${{ env.IMAGE }}:latest \
@@ -83,19 +92,21 @@ jobs:
             --file ./project/docker/prod.Dockerfile \
             ./project
 
-      - id: login-heroku-registry
-        run: docker login --username=_ --password="${{ secrets.HEROKU_AUTH_TOKEN }}" registry.heroku.com
+      - name: Log in and Push Docker Image to Heroku Registry
+        id: login-and-push-heroku
+        run: |
+          echo "${{ secrets.HEROKU_AUTH_TOKEN }}" | docker login --username=_ --password-stdin registry.heroku.com
+          docker push ${{ env.HEROKU_REGISTRY_IMAGE }}:latest
 
-      - id: push-heroku-image
-        run: docker push ${{ env.HEROKU_REGISTRY_IMAGE }}:latest
-
-      - id: set-env-vars
+      - name: Set Environment Variables
+        id: set-env-vars
         run: |
           echo "HEROKU_REGISTRY_IMAGE=${{ env.HEROKU_REGISTRY_IMAGE }}" >> $GITHUB_ENV
           echo "::add-mask::${{ secrets.HEROKU_AUTH_TOKEN }}"  
           echo "HEROKU_AUTH_TOKEN=${{ secrets.HEROKU_AUTH_TOKEN }}" >> $GITHUB_ENV
 
-      - id: release-heroku-app
+      - name: Release Heroku App
+        id: release-heroku-app
         run: |
           chmod +x ./project/scripts/release.sh
           ./project/scripts/release.sh
