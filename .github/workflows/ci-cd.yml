@@ -10,6 +10,7 @@ on:
       - 'project/pyproject.toml'
       - 'project/pdm.lock'
       - 'project/docker/prod.Dockerfile'
+      - '.github/workflows/ci-cd.yml'
   pull_request:
     branches:
       - main
@@ -19,9 +20,10 @@ on:
       - 'project/pyproject.toml'
       - 'project/pdm.lock'
       - 'project/docker/prod.Dockerfile'
-
+      - '.github/workflows/ci-cd.yml'
+      
 env:
-  IMAGE: ghcr.io/${{ github.repository | toLowerCase() }}/${{ secrets.GH_PACKAGES_IMAGE_NAME }}
+  IMAGE: ghcr.io/${{ github.repository }}/${{ secrets.GH_PACKAGES_IMAGE_NAME }}
 
 jobs:
   publish:
