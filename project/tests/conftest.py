@@ -10,10 +10,12 @@ from app.main import create_app
 
 TestClientGenerator = Generator[TestClient, None, None]
 
-def override_get_settings() -> Settings:
-    return Settings(testing=True, database_url=os.environ.get("DATABASE_TEST_URL", None)) # type: ignore
 
-@pytest.fixture(scope='module')
+def override_get_settings() -> Settings:
+    return Settings(testing=True, database_url=os.environ.get("DATABASE_TEST_URL", None))  # type: ignore
+
+
+@pytest.fixture(scope="module")
 def test_app() -> TestClientGenerator:
     """
     Pytest fixture to set up the test application client.
@@ -29,11 +31,12 @@ def test_app() -> TestClientGenerator:
     with TestClient(app) as test_client:
         yield test_client
 
-@pytest.fixture(scope='module')
+
+@pytest.fixture(scope="module")
 def test_app_with_db() -> TestClientGenerator:
     """
     Pytest fixture to set up the test application client with an automatically generated database.
-    
+
     Yields
     ------
     TestClientGenerator

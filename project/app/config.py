@@ -2,14 +2,15 @@ import logging
 from functools import lru_cache
 from typing import Optional
 
-from pydantic import AnyUrl, Field
+from pydantic import AnyUrl
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
-logger = logging.getLogger('uvicorn')
+logger = logging.getLogger("uvicorn")
+
 
 class Settings(BaseSettings):
     """
-    Configuration settings for the application. 
+    Configuration settings for the application.
 
     Attributes
     ----------
@@ -22,12 +23,14 @@ class Settings(BaseSettings):
     database_url : Optional[AnyUrl]
         The URL for connecting to the database.
     """
-    model_config = SettingsConfigDict(env_file='.env', env_file_encoding='utf-8')
-    environment: str = 'dev'
+
+    model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8")
+    environment: str = "dev"
     testing: bool = False
     database_url: Optional[AnyUrl] = None
 
+
 @lru_cache()
 def get_settings() -> Settings:
-    logger.info('Loading config settings from the environment...')
+    logger.info("Loading config settings from the environment...")
     return Settings()

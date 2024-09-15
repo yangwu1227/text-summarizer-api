@@ -20,12 +20,13 @@ async def post(payload: SummaryPayloadSchema) -> int:
     """
     summary = TextSummary(
         url=payload.url,
-        summary='summary',
+        summary="summary",
     )
     # Create/update the model object
     await summary.save()
     # Return the key
     return summary.id
+
 
 async def get(id: int) -> Union[Dict, None]:
     """
@@ -46,6 +47,7 @@ async def get(id: int) -> Union[Dict, None]:
     if summary:
         return summary
     return None
+
 
 async def get_all() -> List[Dict]:
     """
