@@ -1,0 +1,7 @@
+# Ignore all files in the build context by default
+*
+# Include only necessary files
+!app/
+!migrations/
+!pyproject.toml
+!pdm.lock
