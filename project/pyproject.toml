@@ -29,6 +29,7 @@ lint = [
     "flake8>=7.1.1",
     "black>=24.8.0",
     "isort>=5.13.2",
+    "mypy>=1.11.2",
 ]
 
 [tool.aerich]
@@ -41,3 +42,14 @@ profile = "black"
 py_version=311
 src_paths = ["app", "tests"]
 remove_redundant_aliases = true
+
+[tool.mypy]
+python_version = 3.11
+warn_unused_ignores = true
+warn_no_return = true
+warn_unreachable = true
+disallow_untyped_calls = true
+exclude = [
+    "tests",
+    "migrations",
+]
