@@ -4,6 +4,8 @@ This project creates an asynchronous RESTful API built with Python, FastAPI, and
 
 **Credit**: This project is based on [TestDriven.io's FastAPI TDD project](https://github.com/testdrivenio/fastapi-tdd-docker).
 
+[**Project Workflow Documentation**](https://yangwu1227.github.io/text-summarizer-api/)
+
 ## Architecture & Tech Stack
 
 - **Docker**: Containerized application for local development and deployment.
