@@ -4,6 +4,7 @@ from sys import maxsize
 from typing import Dict, List, Union
 
 import pytest
+
 from app.api import crud, summaries
 from app.api.custom_exceptions import SummaryNotFoundException
 from app.models import pydantic
