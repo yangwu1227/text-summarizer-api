@@ -2,8 +2,11 @@ from typing import Annotated, Dict, List
 
 from app.api import crud
 from app.api.custom_exceptions import SummaryNotFoundException
-from app.models.pydantic import (SummaryPayloadSchema, SummaryResponseSchema,
-                                 SummaryUpdatePayloadSchema)
+from app.models.pydantic import (
+    SummaryPayloadSchema,
+    SummaryResponseSchema,
+    SummaryUpdatePayloadSchema,
+)
 from app.models.tortoise import SummarySchema
 from fastapi import APIRouter, Path
 
