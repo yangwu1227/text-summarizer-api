@@ -1,6 +1,6 @@
 from typing import Annotated, Dict, List
 
-from fastapi import APIRouter, Path
+from fastapi import APIRouter, BackgroundTasks, Path
 
 from app.api import crud
 from app.api.custom_exceptions import SummaryNotFoundException
@@ -10,12 +10,15 @@ from app.models.pydantic import (
     SummaryUpdatePayloadSchema,
 )
 from app.models.tortoise import SummarySchema
+from app.summarizer import generate_summary
 
 router = APIRouter()
 
 
 @router.post("/", response_model=SummaryResponseSchema, status_code=201)
-async def create_summary(payload: SummaryPayloadSchema) -> SummaryResponseSchema:
+async def create_summary(
+    payload: SummaryPayloadSchema, background_tasks: BackgroundTasks
+) -> SummaryResponseSchema:
     """
     Create a new summary based on the provided payload.
 
@@ -23,6 +26,8 @@ async def create_summary(payload: SummaryPayloadSchema) -> SummaryResponseSchema
     ----------
     payload : SummaryPayloadSchema
         The payload containing a valid url required to create the new summary.
+    background_tasks : BackgroundTasks
+        A collection of background tasks that will be called after a response has been sent to the client.
 
     Returns
     -------
@@ -30,6 +35,8 @@ async def create_summary(payload: SummaryPayloadSchema) -> SummaryResponseSchema
         The newly created summary's response, including the summary URL and ID.
     """
     summary_id = await crud.post(payload)
+    # Generate summary as a background task
+    background_tasks.add_task(generate_summary, summary_id, str(payload.url))
     response = SummaryResponseSchema(
         url=payload.url,
         id=summary_id,
