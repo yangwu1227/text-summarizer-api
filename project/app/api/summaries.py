@@ -98,7 +98,7 @@ async def remove_summary(
 
     Returns
     -------
-    SummaryResponseSchema
+    Dict
         The retrieved summary response containing an ID and url.
 
     Raises
@@ -112,6 +112,7 @@ async def remove_summary(
         raise SummaryNotFoundException
     # Delete the record
     await crud.delete(id)
+    # Return the summary record that was deleted
     return summary
 
 
@@ -121,7 +122,7 @@ async def update_summary(
     payload: SummaryUpdatePayloadSchema,
 ) -> SummarySchema:  # type:ignore
     """
-    Update a text summary by its ID.
+    Update a text summary by its ID. Both the URL and the summary text are updated based on the provided payload.
 
     Parameters
     ----------

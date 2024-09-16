@@ -1,4 +1,4 @@
-from typing import Annotated
+from typing import Annotated, Dict, Union
 
 from fastapi import APIRouter, Depends
 
@@ -8,7 +8,10 @@ router = APIRouter()
 
 
 @router.get("/ping")
-async def pong(settings: Annotated[Settings, Depends(get_settings)]):
+async def pong(settings: Annotated[Settings, Depends(get_settings)]) -> Dict[str, Union[str, bool]]:
+    """
+    A health check endpoint that returns a simple "ping" response.
+    """
     return {
         "ping": "pong!",
         "environment": settings.environment,
