@@ -1,10 +1,9 @@
 import json
-from typing import Dict, List, Union
+from datetime import datetime, timedelta, timezone
 from sys import maxsize
-from datetime import datetime, timezone, timedelta
+from typing import Dict, List, Union
 
 import pytest
-
 from app.api import crud, summaries
 from app.api.custom_exceptions import SummaryNotFoundException
 from app.models import pydantic

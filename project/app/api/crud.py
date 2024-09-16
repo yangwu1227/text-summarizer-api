@@ -1,6 +1,7 @@
 from typing import Dict, List, Union
 
-from app.models.pydantic import SummaryPayloadSchema, SummaryUpdatePayloadSchema
+from app.models.pydantic import (SummaryPayloadSchema,
+                                 SummaryUpdatePayloadSchema)
 from app.models.tortoise import TextSummary
 
 

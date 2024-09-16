@@ -2,7 +2,6 @@ import json
 from sys import maxsize
 
 import pytest
-
 from app.api.custom_exceptions import SummaryNotFoundException
 
 

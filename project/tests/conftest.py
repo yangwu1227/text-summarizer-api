@@ -2,11 +2,10 @@ import os
 from typing import Generator
 
 import pytest
-from starlette.testclient import TestClient
-from tortoise.contrib.fastapi import register_tortoise
-
 from app.config import Settings, get_settings
 from app.main import create_app
+from starlette.testclient import TestClient
+from tortoise.contrib.fastapi import register_tortoise
 
 TestClientGenerator = Generator[TestClient, None, None]
 
