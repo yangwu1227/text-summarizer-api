@@ -1,0 +1,166 @@
+# Workflows
+
+## Environment Setup
+
+### Install PDM
+
+The dependency manager used in this project is [pdm](https://github.com/pdm-project/pdm). To install it, run the following command:
+
+```bash
+$ curl -sSL https://pdm-project.org/install-pdm.py | python3 -
+```
+
+Or, alternatively, other [installation methods](https://pdm-project.org/en/latest/#installation) can be used.
+
+### Install Dependencies
+
+The dependencies are broken into groups:
+
+* Default dependencies: required for the core functionality of the project in production.
+
+* Development dependencies: required for development, testing, and documentation.
+
+The specified python version in `pyproject.toml` is `3.11`, and so a **python 3.11** interpreter should be used. 
+
+#### Conda
+
+To do so with [conda](https://conda.io/projects/conda/en/latest/user-guide/install/index.html):
+
+```bash
+$ conda search python | grep " 3\.\(10\|11\|12\)\."
+$ yes | conda create --name text_summarizer_api python=3.11.9
+$ conda activate text_summarizer_api
+$ pdm use -f $(which python3)
+$ pdm install
+```
+
+#### Pyenv
+
+To do so with [pyenv](https://github.com/pyenv/pyenv):
+
+```bash 
+$ pyenv install --list | grep " 3\.\(10\|11\|12\)\."
+$ pyenv install 3.11.9
+# See https://pdm-project.org/latest/reference/cli/#use
+$ pdm use -f $(pyenv shell 3.11.9; pyenv which python3)
+$ pdm install
+```
+
+---
+
+## Docker Compose 
+
+The development environment is set up using [Docker Compose](https://docs.docker.com/compose/). This setup defines two services--- `web` (for the FastAPI application) and `web-db` (for the PostgreSQL database).
+
+* **web**: sets up the application based on `dev.Dockerfile`.
+
+* **wev-db**: sets up a PostgreSQL database based on `db.Dockerfile`, which simply [add](https://docs.docker.com/reference/dockerfile/#add)s a `.sql` file to the container at `/docker-entrypoint-initdb.d/`.
+
+### Build and Run the Services
+
+**Note**: All the commands should be run from the root of the project where `docker-compose.yml` is located. In addition, Compose V2 is used, so the `docker-compose` command is replaced with `docker compose`.
+
+To build the images and run the containers in the background:
+
+```bash
+$ docker compose up --detach --build
+```
+
+Directories such as `app/`, `tests/`, `migrations/`, and the `pyproject.toml` file are mounted to the `web` service. This allows for automatically reloading of the application when changes are made to the code.
+
+To stop the containers without removing them:
+
+```bash
+$ docker compose stop
+```
+
+To stop, remove the containers, and remove named volumes:
+
+```bash
+$ docker compose down --volumes
+```
+
+### Logs
+
+To view the logs of the services:
+
+```bash
+$ docker compose logs <service-name>
+```
+
+### Interactive Shell
+
+To run an interactive shell in a service:
+
+```bash
+# Or /bin/bash
+$ docker compose exec <service-name> /bin/sh
+```
+
+---
+
+## Database Migrations
+
+The database migrations are managed using [aerich](https://github.com/tortoise/aerich), which is a tool for [Tortoise-ORM](https://github.com/tortoise/tortoise-orm).
+
+### Configuration
+
+To set up the initiation config file and generate the root migrate location:
+
+```bash
+$ docker exec <service-name> aerich init -t app.db.TORTOISE_ORM
+```
+
+The `-t` flag specifies the module path to the Tortoise-ORM settings inside the `app.db` module. 
+
+### Initialize Database
+
+To initialize the database:
+
+```bash
+$ docker exec <service-name> aerich init-db
+```
+
+### Upgrade Database
+
+From this point on, since the local `migrations/` directory is synced with the `migration` directory on the container, run the following to migrate the database to the latest version:
+
+```bash
+$ docker exec <service-name> aerich upgrade
+```
+
+See the [usage](https://github.com/tortoise/aerich?tab=readme-ov-file#usage) documentation for more commands.
+
+---
+
+## PSQL
+
+The PostgreSQL database can be accessed using [psql](https://www.postgresql.org/docs/current/app-psql.html), which is a terminal-based front-end to PostgreSQL.
+
+```bash
+$ docker exec -it <service-name> psql -U postgres
+```
+
+### Connect 
+
+To connect to a specific PostgreSQL database within the server:
+
+```bash
+$ \c <database-name>
+```
+
+### List Tables
+
+To list the tables in the connected database:
+
+```bash
+$ \dt
+```
+
+### Quit
+
+To quit the `psql` shell:
+
+```bash
+$ \q
+```

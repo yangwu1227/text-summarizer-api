@@ -22,22 +22,22 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout Repository
+      - name: Checkout repository
         id: checkout-repo
         uses: actions/checkout@v4
 
-      - name: Log in to GitHub Container Registry
+      - name: Log in to gitHub container registry
         id: login-ghcr
         run: echo "${GH_PAT}" | docker login ghcr.io -u "${{ github.actor }}" --password-stdin
         env:
           GH_PAT: ${{ secrets.GH_PAT }}
 
-      - name: Pull Existing Docker Image
+      - name: Pull existing docker image
         id: pull-existing-docker-image
         run: |
           docker pull ${{ env.IMAGE }}:latest || true
 
-      - name: Build Docker Image
+      - name: Build docker image
         id: build-docker-image
         run: |
           docker build \
@@ -46,13 +46,13 @@ jobs:
             --file ./project/docker/${{ env.MODE }}.Dockerfile \
             ./project
 
-      - name: Push Docker Image to GitHub Registry
+      - name: Push docker image to gitHub registry
         id: push-docker-image
         run: |
           docker push ${{ env.IMAGE }}:latest
 
   deploy:
-    name: Deploy to Heroku
+    name: Deploy to heroku
     runs-on: ubuntu-latest
     needs: [publish]
     env:
@@ -60,21 +60,21 @@ jobs:
       HEROKU_REGISTRY_IMAGE: registry.heroku.com/${{ secrets.HEROKU_APP_NAME }}/web
 
     steps:
-      - name: Checkout Repository
+      - name: Checkout repository
         id: checkout-repo
         uses: actions/checkout@v4
 
-      - name: Log in to GitHub Container Registry
+      - name: Log in to gitHub container registry
         id: login-ghcr
         run: echo "${GH_PAT}" | docker login ghcr.io -u "${{ github.actor }}" --password-stdin
         env:
           GH_PAT: ${{ secrets.GH_PAT }}
 
-      - name: Pull Docker Image from GitHub Registry
+      - name: Pull docker image from gitHub registry
         id: pull-docker-image-from-ghcr
         run: docker pull ${{ env.IMAGE }}:latest || true
 
-      - name: Build Heroku Docker Image
+      - name: Build heroku docker image
         id: build-heroku-docker-image
         run: |
           docker build \
@@ -83,7 +83,7 @@ jobs:
             --file ./project/docker/prod.Dockerfile \
             ./project
 
-      - name: Log in and Push Docker Image to Heroku Registry
+      - name: Log in and push docker image to heroku registry
         id: login-and-push-heroku-registry
         run: |
           echo ${HEROKU_AUTH_TOKEN} | docker login --username=_ --password-stdin registry.heroku.com
@@ -91,14 +91,14 @@ jobs:
         env:
           HEROKU_AUTH_TOKEN: ${{ secrets.HEROKU_AUTH_TOKEN }}
 
-      - name: Set Environment Variables to be Used in Release Step
+      - name: Set environment variables to be used in release step
         id: set-heroku-env-vars
         run: |
           echo "HEROKU_REGISTRY_IMAGE=${{ env.HEROKU_REGISTRY_IMAGE }}" >> $GITHUB_ENV
           echo "::add-mask::${{ secrets.HEROKU_AUTH_TOKEN }}"  
           echo "HEROKU_AUTH_TOKEN=${{ secrets.HEROKU_AUTH_TOKEN }}" >> $GITHUB_ENV
 
-      - name: Release Heroku App
+      - name: Release heroku app
         id: release-heroku-app
         run: |
           chmod +x ./project/scripts/release.sh
