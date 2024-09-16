@@ -1,24 +1,40 @@
 import json
+from datetime import datetime, timedelta, timezone
 from sys import maxsize
+from typing import Dict, List, Union
 
 import pytest
 
+from app.api import crud, summaries
 from app.api.custom_exceptions import SummaryNotFoundException
+from app.models import pydantic
 
 
-class TestSummary(object):
+class TestSummaryUnit(object):
     """
-    Tests for GET /summaries, GET /summaries/:id, POST /summaries, PUT /summaries/:id, and DELETE /summaries/:id.
+    Tests for GET /summaries, GET /summaries/:id, POST /summaries, PUT /summaries/:id, and DELETE /summaries/:id that does not invovle a database test client. This is
+    accomplished via monkey patching all CRUD operations.
     """
 
-    def test_create_summary(self, test_app_with_db) -> None:
+    def test_create_summary_unit(self, test_app, monkeypatch) -> None:
         """
         Test for create_summary on the happy path.
         """
-        test_url = "https://yahoo.com/"
-        response = test_app_with_db.post("/summaries/", data=json.dumps({"url": test_url}))
+
+        # Monkeypatch the crud function
+        async def mock_post(payload: pydantic.SummaryPayloadSchema) -> int:
+            return 1
+
+        monkeypatch.setattr(crud, "post", mock_post)
+
+        test_url = "https://google.com/"
+        test_request_payload = {"url": test_url}
+        expected_response = {"id": 1, "url": test_url}
+        # This should be a SummaryResponseSchema instance
+        response = test_app.post("/summaries/", data=json.dumps(test_request_payload))
+
         assert response.status_code == 201
-        assert response.json()["url"] == test_url
+        assert response.json() == expected_response
 
     @pytest.mark.parametrize(
         "payload, expected_status_code, expected_response",
@@ -75,38 +91,40 @@ class TestSummary(object):
         ],
         scope="function",
     )
-    def test_create_summary_invalid_request(
-        self, test_app_with_db, payload, expected_status_code, expected_response
+    def test_create_summary_invalid_request_unit(
+        self, test_app, payload, expected_status_code, expected_response
     ) -> None:
         """
         Test for create_summary with invalid request payloads.
         """
-        response = test_app_with_db.post("/summaries/", data=json.dumps(payload))
+        response = test_app.post("/summaries/", data=json.dumps(payload))
         assert response.status_code == expected_status_code
         print(response.json())
         assert response.json() == expected_response
 
-    def test_read_summary(self, test_app_with_db) -> None:
+    def test_read_summary_unit(self, test_app, monkeypatch) -> None:
         """
         Test for read_summary on the happy path.
         """
-        test_url = "https://google.com/"
-        # Create summary and get the generated ID
-        response = test_app_with_db.post("/summaries/", data=json.dumps({"url": test_url}))
-        summary_id = response.json()["id"]
+        ios_time = datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
+        # Test SummarySchema
+        test_summary_schema = {
+            "id": 1,
+            "url": "https://google.com/",
+            "summary": "test summary",
+            "created_at": ios_time,
+        }
+
+        # Monkeypatch the crud function
+        async def mock_get(id: int) -> Dict:
+            return test_summary_schema
+
+        monkeypatch.setattr(crud, "get", mock_get)
 
         # Response for a get operation
-        response = test_app_with_db.get(f"/summaries/{summary_id}")
+        response = test_app.get(f"/summaries/{test_summary_schema['id']}")
         assert response.status_code == 200
-
-        response_data = response.json()
-        # The id field should match that from the SummaryResponseSchema
-        assert response_data["id"] == summary_id
-        # The url field should match
-        assert response_data["url"] == test_url
-        # The summary and created_at fields should exist
-        assert response_data["summary"]
-        assert response_data["created_at"]
+        assert response.json() == test_summary_schema
 
     @pytest.mark.parametrize(
         "id, expected_status_code, expected_response",
@@ -136,46 +154,93 @@ class TestSummary(object):
         ],
         scope="function",
     )
-    def test_read_summary_invalid_id(
-        self, test_app_with_db, id, expected_status_code, expected_response
+    def test_read_summary_invalid_id_unit(
+        self,
+        test_app,
+        monkeypatch,
+        id,
+        expected_status_code,
+        expected_response,
     ) -> None:
         """
         Test for read_summary when an invalid (non-existent) id is passed.
         """
-        response = test_app_with_db.get(f"/summaries/{id}/")
+
+        # Monkeypatch the crud function, which returns None given invalid ID's
+        async def mock_get(id: int) -> None:
+            return None
+
+        monkeypatch.setattr(crud, "get", mock_get)
+        response = test_app.get(f"/summaries/{id}/")
         assert response.status_code == expected_status_code
         assert response.json() == expected_response
 
-    def test_read_all_summaries(self, test_app_with_db) -> None:
+    def test_read_all_summaries_unit(self, test_app, monkeypatch) -> None:
         """
         Test for read_all_summaries on the happy path.
         """
-        # Post a new url so a record is created in the database
-        test_url = "https://fastapi.tiangolo.com/"
-        response = test_app_with_db.post("/summaries/", data=json.dumps({"url": test_url}))
-        summary_id = response.json()["id"]
+        # Monkey patch the get_all crud operation
+        timestamps = [
+            (datetime.now(timezone.utc) + timedelta(hours=i)).isoformat().replace("+00:00", "Z")
+            for i in range(3)
+        ]
+        test_summaries = [
+            {
+                "id": 1,
+                "url": "https://google.com/",
+                "summary": "google",
+                "created_at": timestamps[0],
+            },
+            {
+                "id": 2,
+                "url": "https://yahoo.com/",
+                "summary": "yahoo",
+                "created_at": timestamps[1],
+            },
+            {
+                "id": 3,
+                "url": "https://tesla.com/",
+                "summary": "tesla",
+                "created_at": timestamps[2],
+            },
+        ]
 
-        # Get all summaries
-        response = test_app_with_db.get("/summaries/")
+        async def mock_get_all() -> List[Dict]:
+            return test_summaries
+
+        monkeypatch.setattr(crud, "get_all", mock_get_all)
+
+        response = test_app.get("/summaries/")
         assert response.status_code == 200
+        assert response.json() == test_summaries
 
-        # Response is a list of SummarySchema's
-        response_list = response.json()
-        # Ensure that the newly created text summary is among the list of text summaries
-        assert (len(list(filter(lambda summary_schema: summary_schema["id"] == summary_id, response_list))) == 1)  # fmt: skip
-
-    def test_remove_summary(self, test_app_with_db) -> None:
+    def test_remove_summary_unit(self, test_app, monkeypatch) -> None:
         """
         Test for remove_summary on the happy path.
         """
-        test_url = "https://www.python.org/"
-        response = test_app_with_db.post("/summaries/", data=json.dumps({"url": test_url}))
-        summary_id = response.json()["id"]
+        test_record = {
+            "id": 7,
+            "url": "https://www.python.org/",
+            "summary": "python programming",
+            "created_at": datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"),
+        }
+
+        # Mock the get path operation to simulate an existing record that matches the id of the record to be deleted
+        async def mock_get(id: int) -> Dict:
+            return test_record
+
+        monkeypatch.setattr(crud, "get", mock_get)
+
+        # Then, mock the delete crud operation
+        async def mock_delete(id: int) -> Union[None, Dict]:
+            return None
+
+        monkeypatch.setattr(crud, "delete", mock_delete)
 
         # The response should be a SummaryResponseSchema instance
-        response = test_app_with_db.delete(f"/summaries/{summary_id}/")
+        response = test_app.delete(f"/summaries/{test_record['id']}/")
         assert response.status_code == 200
-        assert response.json() == {"id": summary_id, "url": test_url}
+        assert response.json() == {"id": test_record["id"], "url": test_record["url"]}
 
     @pytest.mark.parametrize(
         "id, expected_status_code, expected_response",
@@ -207,37 +272,48 @@ class TestSummary(object):
         ],
         scope="function",
     )
-    def test_remove_summary_invalid_id(
-        self, test_app_with_db, id, expected_status_code, expected_response
+    def test_remove_summary_invalid_id_unit(
+        self, test_app, monkeypatch, id, expected_status_code, expected_response
     ) -> None:
         """
         Test for remove_summary when an invalid (non-existent) id is passed.
         """
-        response = test_app_with_db.delete(f"/summaries/{id}/")
+
+        async def mock_get(id) -> Union[None, Dict]:
+            return None
+
+        monkeypatch.setattr(crud, "get", mock_get)
+        response = test_app.delete(f"/summaries/{id}/")
         assert response.status_code == expected_status_code
         assert response.json() == expected_response
 
-    def test_update_summary(self, test_app_with_db) -> None:
+    def test_update_summary_unit(self, test_app, monkeypatch) -> None:
         """
         Test for update_summary on the happy path.
         """
-        test_url = "https://yahoo.com/"
-        response = test_app_with_db.post("/summaries/", data=json.dumps({"url": test_url}))
-        summary_id = response.json()["id"]
+        test_update_payload = {"url": "https://yahoo.com/", "summary": "Updated summary"}
+        test_updated_response = {
+            "id": 12,
+            "url": test_update_payload["url"],  # New url from updated payload request body
+            "summary": test_update_payload[
+                "summary"
+            ],  # New summary from update payload request body
+            "created_at": datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"),
+        }
 
-        response = test_app_with_db.put(
-            f"/summaries/{summary_id}/",
-            data=json.dumps({"url": test_url, "summary": "Updated summary"}),
+        async def mock_put(
+            id: int, payload: pydantic.SummaryUpdatePayloadSchema
+        ) -> Union[Dict, None]:
+            return test_updated_response
+
+        monkeypatch.setattr(crud, "put", mock_put)
+
+        response = test_app.put(
+            f"/summaries/{12}/",
+            data=json.dumps(test_update_payload),
         )
         assert response.status_code == 200
-
-        response_data = response.json()
-        # Ensure that the id and url match those from the post path operation
-        assert response_data["id"] == summary_id
-        assert response_data["url"] == test_url
-        # The summary and created_at fields should exist, and summary should match the user friendly feedback
-        assert response_data["summary"] == "Updated summary"
-        assert response_data["created_at"]
+        assert response.json() == test_updated_response
 
     @pytest.mark.parametrize(
         "id, payload, expected_status_code, expected_response",
@@ -310,21 +386,30 @@ class TestSummary(object):
         scope="function",
     )
     def test_update_summary_invalid_id_or_request(
-        self, test_app_with_db, id, payload, expected_status_code, expected_response
+        self, test_app, monkeypatch, id, payload, expected_status_code, expected_response
     ) -> None:
         """
         Test for update_summary given invalid id or request body with missing fields.
         """
-        response = test_app_with_db.put(f"/summaries/{id}/", data=json.dumps(payload))
+
+        # Monkeypatch the put crud operation, which returns None when missing or invalid request is passed
+        async def mock_put(
+            id: int, payload: pydantic.SummaryUpdatePayloadSchema
+        ) -> Union[Dict, None]:
+            return None
+
+        monkeypatch.setattr(crud, "put", mock_put)
+
+        response = test_app.put(f"/summaries/{id}/", data=json.dumps(payload))
         assert response.status_code == expected_status_code
         assert response.json() == expected_response
 
 
-def test_update_summary_invalid_url(test_app_with_db) -> None:
+def test_update_summary_invalid_url(test_app) -> None:
     """
     Test for update_summary given invalid url in the request body with valid ID and updated summary.
     """
-    response = test_app_with_db.put(
+    response = test_app.put(
         "/summaries/1/",
         data=json.dumps({"url": "invalid://url", "summary": "Updated summary"}),
     )

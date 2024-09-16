@@ -11,19 +11,10 @@ on:
       - 'project/pdm.lock'
       - 'project/docker/prod.Dockerfile'
       - '.github/workflows/ci-cd.yml'
-  pull_request:
-    branches:
-      - main
-    paths:
-      - 'project/app/**'
-      - 'project/migrations/**'
-      - 'project/pyproject.toml'
-      - 'project/pdm.lock'
-      - 'project/docker/prod.Dockerfile'
-      - '.github/workflows/ci-cd.yml'
       
 env:
-  IMAGE: ghcr.io/${{ github.repository }}/${{ secrets.GH_PACKAGES_IMAGE_NAME }}
+  MODE: prod
+  IMAGE: ghcr.io/${{ github.repository }}/prod-image
 
 jobs:
   publish:
@@ -52,7 +43,7 @@ jobs:
           docker build \
             --cache-from ${{ env.IMAGE }}:latest \
             --tag ${{ env.IMAGE }}:latest \
-            --file ./project/docker/prod.Dockerfile \
+            --file ./project/docker/${{ env.MODE }}.Dockerfile \
             ./project
 
       - name: Push Docker Image to GitHub Registry

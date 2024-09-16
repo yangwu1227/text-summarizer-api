@@ -1,0 +1,83 @@
+name: Build Dev Image and Run Tests & Linters
+
+on: 
+  pull_request:
+    branches:
+      - main
+    paths:
+      - 'project/app/**'
+      - 'project/tests/**'
+      - 'project/migrations/**'
+      - 'project/pyproject.toml'
+      - 'project/pdm.lock'
+      - 'project/docker/prod.Dockerfile'
+      - '.github/workflows/dev.yml'
+      
+env:
+  MODE: dev
+  IMAGE: ghcr.io/${{ github.repository }}/dev-image
+
+jobs:
+  build-test-lint:
+    name: Test Build Docker Image and Run Tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        id: checkout-repo
+        uses: actions/checkout@v4
+
+      - name: Log in to GitHub Container Registry
+        id: login-ghcr
+        run: echo "${GH_PAT}" | docker login ghcr.io -u "${{ github.actor }}" --password-stdin
+        env:
+          GH_PAT: ${{ secrets.GH_PAT }}
+
+      - name: Pull Existing Docker Image
+        id: pull-existing-docker-image
+        run: |
+          docker pull ${{ env.IMAGE }}:latest || true
+
+      - name: Build Docker Image
+        id: build-docker-image
+        run: |
+          docker build \
+            --cache-from ${{ env.IMAGE }}:latest \
+            --tag ${{ env.IMAGE }}:latest \
+            --file ./project/docker/${{ env.MODE }}.Dockerfile \
+            ./project
+
+      - name: Push Docker Image to GitHub Registry
+        id: push-docker-image
+        run: |
+          docker push ${{ env.IMAGE }}:latest
+
+      - name: Run Docker Container
+        id: run-docker-container
+        run: |
+          docker run \
+            --name test-container \
+            --detach \
+            -e PORT=8765 \
+            -e ENVIRONMENT=dev \
+            -e DATABASE_URL="${DB_URL}" \
+            -e DATABASE_TEST_URL="${DB_URL}" \
+            -p 5003:8765 \
+            ${{ env.IMAGE }}:latest
+        env:
+          DB_URL: sqlite://test.db
+
+      - name: Run Tests
+        id: run-tests
+        run: |
+          docker exec test-container python -m pytest . 
+      
+      - name: Run Black
+        id: run-black
+        run: |
+          docker exec test-container black . --check 
+        
+      - name: Run Isort
+        id: run-isort
+        run: |
+          docker exec test-container isort . --check-only

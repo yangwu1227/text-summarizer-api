@@ -57,3 +57,11 @@ exclude = [
 [tool.black]
 line-length = 100
 target-version = ['py311']
+
+[tool.pytest.ini_options]
+filterwarnings = [
+    "ignore::DeprecationWarning:fastapi.applications",
+    "ignore::DeprecationWarning:tortoise.contrib.fastapi",
+    "ignore::DeprecationWarning:httpx._content",
+    "ignore::DeprecationWarning:app.main",
+]
