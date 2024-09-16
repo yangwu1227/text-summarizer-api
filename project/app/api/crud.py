@@ -6,7 +6,8 @@ from app.models.tortoise import TextSummary
 
 async def post(payload: SummaryPayloadSchema) -> int:
     """
-    Create a new summary record and save it to the database.
+    Create a new summary record and save it to the database. The summary field is initially
+    left as an empty string and is updated once the background task completes.
 
     Parameters
     ----------
