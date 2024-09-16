@@ -100,7 +100,7 @@ async def put(id: int, payload: SummaryUpdatePayloadSchema) -> Union[Dict, None]
     # The return object is an instance of UpdateQuery or None depending on if filter finds the given ID
     summary = await TextSummary.filter(id=id).update(url=payload.url, summary=payload.summary)
     if summary:
-        # Update ans return the updated summary schema {"id": ..., "url": ..., "summary": ...}
-        updated_summary = await TextSummary.filter(id=id).first().values()
-        return updated_summary
+        # Update and return the updated summary schema {"id": ..., "url": ..., "summary": ...}
+        updated_summary_schema = await TextSummary.filter(id=id).first().values()
+        return updated_summary_schema
     return None
