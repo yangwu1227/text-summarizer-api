@@ -21,6 +21,12 @@ class TestSummaryUnit(object):
         Test for create_summary on the happy path.
         """
 
+        # Monkeypatch the generate summary function
+        def mock_generate_summary(summary_id, url):
+            return None
+
+        monkeypatch.setattr(summaries, "generate_summary", mock_generate_summary)
+
         # Monkeypatch the crud function
         async def mock_post(payload: pydantic.SummaryPayloadSchema) -> int:
             return 1

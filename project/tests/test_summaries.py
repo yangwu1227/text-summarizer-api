@@ -3,6 +3,7 @@ from sys import maxsize
 
 import pytest
 
+from app.api import summaries
 from app.api.custom_exceptions import SummaryNotFoundException
 
 
@@ -11,10 +12,17 @@ class TestSummary(object):
     Tests for GET /summaries, GET /summaries/:id, POST /summaries, PUT /summaries/:id, and DELETE /summaries/:id.
     """
 
-    def test_create_summary(self, test_app_with_db) -> None:
+    def test_create_summary(self, test_app_with_db, monkeypatch) -> None:
         """
         Test for create_summary on the happy path.
         """
+
+        # Monkeypatch the generate summary function
+        def mock_generate_summary(summary_id, url):
+            return None
+
+        monkeypatch.setattr(summaries, "generate_summary", mock_generate_summary)
+
         test_url = "https://yahoo.com/"
         response = test_app_with_db.post("/summaries/", data=json.dumps({"url": test_url}))
         assert response.status_code == 201
@@ -86,10 +94,17 @@ class TestSummary(object):
         print(response.json())
         assert response.json() == expected_response
 
-    def test_read_summary(self, test_app_with_db) -> None:
+    def test_read_summary(self, test_app_with_db, monkeypatch) -> None:
         """
         Test for read_summary on the happy path.
         """
+
+        # Monkeypatch the generate summary function
+        def mock_generate_summary(summary_id, url):
+            return None
+
+        monkeypatch.setattr(summaries, "generate_summary", mock_generate_summary)
+
         test_url = "https://google.com/"
         # Create summary and get the generated ID
         response = test_app_with_db.post("/summaries/", data=json.dumps({"url": test_url}))
@@ -104,8 +119,7 @@ class TestSummary(object):
         assert response_data["id"] == summary_id
         # The url field should match
         assert response_data["url"] == test_url
-        # The summary and created_at fields should exist
-        assert response_data["summary"]
+        # The created_at fields should exist (summary is an empty string initially)
         assert response_data["created_at"]
 
     @pytest.mark.parametrize(
@@ -146,10 +160,17 @@ class TestSummary(object):
         assert response.status_code == expected_status_code
         assert response.json() == expected_response
 
-    def test_read_all_summaries(self, test_app_with_db) -> None:
+    def test_read_all_summaries(self, test_app_with_db, monkeypatch) -> None:
         """
         Test for read_all_summaries on the happy path.
         """
+
+        # Monkeypatch the generate summary function
+        def mock_generate_summary(summary_id, url):
+            return None
+
+        monkeypatch.setattr(summaries, "generate_summary", mock_generate_summary)
+
         # Post a new url so a record is created in the database
         test_url = "https://fastapi.tiangolo.com/"
         response = test_app_with_db.post("/summaries/", data=json.dumps({"url": test_url}))
@@ -164,10 +185,17 @@ class TestSummary(object):
         # Ensure that the newly created text summary is among the list of text summaries
         assert (len(list(filter(lambda summary_schema: summary_schema["id"] == summary_id, response_list))) == 1)  # fmt: skip
 
-    def test_remove_summary(self, test_app_with_db) -> None:
+    def test_remove_summary(self, test_app_with_db, monkeypatch) -> None:
         """
         Test for remove_summary on the happy path.
         """
+
+        # Monkeypatch the generate summary function
+        def mock_generate_summary(summary_id, url):
+            return None
+
+        monkeypatch.setattr(summaries, "generate_summary", mock_generate_summary)
+
         test_url = "https://www.python.org/"
         response = test_app_with_db.post("/summaries/", data=json.dumps({"url": test_url}))
         summary_id = response.json()["id"]
@@ -217,10 +245,17 @@ class TestSummary(object):
         assert response.status_code == expected_status_code
         assert response.json() == expected_response
 
-    def test_update_summary(self, test_app_with_db) -> None:
+    def test_update_summary(self, test_app_with_db, monkeypatch) -> None:
         """
         Test for update_summary on the happy path.
         """
+
+        # Monkeypatch the generate summary function
+        def mock_generate_summary(summary_id, url):
+            return None
+
+        monkeypatch.setattr(summaries, "generate_summary", mock_generate_summary)
+
         test_url = "https://yahoo.com/"
         response = test_app_with_db.post("/summaries/", data=json.dumps({"url": test_url}))
         summary_id = response.json()["id"]
