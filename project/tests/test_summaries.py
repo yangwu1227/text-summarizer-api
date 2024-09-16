@@ -8,7 +8,7 @@ from app.api.custom_exceptions import SummaryNotFoundException
 
 class TestSummary(object):
     """
-    Tests for GET /summaries, GET /summaries/:id, and POST /summaries.
+    Tests for GET /summaries, GET /summaries/:id, POST /summaries, PUT /summaries/:id, and DELETE /summaries/:id.
     """
 
     def test_create_summary(self, test_app_with_db) -> None:
@@ -76,12 +76,12 @@ class TestSummary(object):
         scope="function",
     )
     def test_create_summary_invalid_request(
-        self, test_app, payload, expected_status_code, expected_response
+        self, test_app_with_db, payload, expected_status_code, expected_response
     ) -> None:
         """
         Test for create_summary with invalid request payloads.
         """
-        response = test_app.post("/summaries/", data=json.dumps(payload))
+        response = test_app_with_db.post("/summaries/", data=json.dumps(payload))
         assert response.status_code == expected_status_code
         print(response.json())
         assert response.json() == expected_response
@@ -320,11 +320,11 @@ class TestSummary(object):
         assert response.json() == expected_response
 
 
-def test_update_summary_invalid_url(test_app) -> None:
+def test_update_summary_invalid_url(test_app_with_db) -> None:
     """
     Test for update_summary given invalid url in the request body with valid ID and updated summary.
     """
-    response = test_app.put(
+    response = test_app_with_db.put(
         "/summaries/1/",
         data=json.dumps({"url": "invalid://url", "summary": "Updated summary"}),
     )
