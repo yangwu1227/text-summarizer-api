@@ -1,5 +1,7 @@
 #!/bin/sh
 
+source "$(dirname "$0")/platform_selection.sh"
+
 # Exit immediately if any command fails
 set -e
 
@@ -7,7 +9,7 @@ set -e
 read -p "Enter the relative or absolute path to the Dockerfile: " dockerfile_path
 read -p "Enter the relative or absolute path to the build context: " build_context_path
 # Prompt the user for the target platform
-read -p "Enter the target platform (e.g., linux/amd64, linux/arm64, or both): " target_platforms
+select_target_platform
 # Github username, repository, and PAT
 read -p "Enter a Github username: " github_username
 read -p "Enter a Github repository name: " github_repo_name
