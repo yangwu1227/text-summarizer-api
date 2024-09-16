@@ -38,12 +38,15 @@ This project creates an asynchronous RESTful API built with Python, FastAPI, and
 - **Get a summary:** `GET /summaries/{id}/`
 
   ```bash
-  curl "https://text-summarizer-d918be4fb9c8.herokuapp.com/summaries/{id}/"
+  # Format the response using jq
+  curl "https://text-summarizer-d918be4fb9c8.herokuapp.com/summaries/{id}/" | jq
   ```
 
 - **Get all summaries:** `GET /summaries/`
+
   ```bash
-  curl "https://text-summarizer-d918be4fb9c8.herokuapp.com/summaries/"
+  # Format the response using jq
+  curl "https://text-summarizer-d918be4fb9c8.herokuapp.com/summaries/" | jq
   ```
 
 - **Update a summary:** `PUT /summaries/{id}/`
@@ -57,7 +60,7 @@ This project creates an asynchronous RESTful API built with Python, FastAPI, and
 - **Delete a summary:** `DELETE /summaries/{id}/`
 
   ```bash
-  curl -X DELETE "https://text-summarizer-d918be4fb9c8.herokuapp.com/summaries/{id}/"
+  curl -X DELETE "https://text-summarizer-d918be4fb9c8.herokuapp.com/summaries/{id}/" 
   ```
 
 ## Testing the API
