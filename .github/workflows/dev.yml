@@ -1,4 +1,4 @@
-name: Development CI for Tests and Building Image
+name: Build Dev Image and Run Tests & Linters
 
 on: 
   pull_request:
@@ -18,7 +18,7 @@ env:
   IMAGE: ghcr.io/${{ github.repository }}/dev-image
 
 jobs:
-  build-and-test:
+  build-test-lint:
     name: Test Build Docker Image and Run Tests
     runs-on: ubuntu-latest
 
