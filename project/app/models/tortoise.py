@@ -27,6 +27,9 @@ class TextSummary(Model):
     id = fields.IntField(primary_key=True)
     url = fields.TextField()
     summary = fields.TextField()
+    # Allow null to handle existing records before these were added to the schema
+    summarization_method = fields.TextField(null=True)
+    sentence_count = fields.IntField(null=True)
     # Automatically set the field to now when the object is first created
     created_at = fields.DatetimeField(auto_now_add=True)
 
@@ -49,4 +52,4 @@ This schema can be used to validate data for both incoming requests and outgoing
 in a FastAPI application. It ensures that the fields from the Tortoise ORM model are properly 
 validated when used within API endpoints.
 """
-SummarySchema = pydantic_model_creator(TextSummary)
+TextSummarySchema = pydantic_model_creator(TextSummary)
