@@ -101,19 +101,21 @@ $ docker compose exec <service-name> /bin/sh
 
 ## Database Migrations
 
-The database migrations are managed using [aerich](https://github.com/tortoise/aerich), which is a tool for [Tortoise-ORM](https://github.com/tortoise/tortoise-orm).
+The database migrations are managed using [aerich](https://github.com/tortoise/aerich), which is a tool specifically designed for [Tortoise-ORM](https://github.com/tortoise/tortoise-orm).
 
-### Configuration
+### First Time Setup
 
-To set up the initiation config file and generate the root migrate location:
+#### Configuration
+
+To set up the initial config file and generate the root migrate location:
 
 ```bash
 $ docker exec <service-name> aerich init -t app.db.TORTOISE_ORM
 ```
 
-The `-t` flag specifies the module path to the Tortoise-ORM settings inside the `app.db` module. 
+The `-t` flag specifies the module path to the Tortoise-ORM settings inside the `app.db` module. This will add a `tool.aerich` section to the `pyproject.toml` file.
 
-### Initialize Database
+#### Initialize Database
 
 To initialize the database:
 
@@ -121,15 +123,35 @@ To initialize the database:
 $ docker exec <service-name> aerich init-db
 ```
 
-### Upgrade Database
+This will create the tables in the database based on the models defined in `app/models/` along with the first migration file in the `migrations/` directory.
 
-From this point on, since the local `migrations/` directory is synced with the `migration` directory on the container, run the following to migrate the database to the latest version:
+### Migration Workflow
+
+From this point on, since the local `migrations/` directory is synced with the `migrations/` directory on the container (for both `prod` & `dev`), each time a change is made to the model, the following steps should be taken:
+
+1. In development mode, update the model in `app/models/` and run the following command to generate a new migration:
+
+```bash
+$ docker exec <service-name> aerich migrate --name <migration-name>
+```
+
+2. Apply the migration in development mode:
 
 ```bash
 $ docker exec <service-name> aerich upgrade
 ```
 
-See the [usage](https://github.com/tortoise/aerich?tab=readme-ov-file#usage) documentation for more commands.
+3. Run tests and any other necessary checks.
+
+4. Merge the changes to the `main` branch, which will trigger a deployment to the production environment. 
+
+5. Once the changes are deployed, apply the migration in production via the [heroku](https://devcenter.heroku.com/articles/heroku-cli-commands#heroku-run) CLI:
+
+```bash
+$ heroku run aerich upgrade --app <app-name>
+```
+
+See the aerich's [usage](https://github.com/tortoise/aerich?tab=readme-ov-file#usage) documentation for more commands and details.
 
 ---
 
