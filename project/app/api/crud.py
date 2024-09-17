@@ -20,7 +20,12 @@ async def post(payload: SummaryPayloadSchema) -> int:
     int
         The ID of the newly created summary.
     """
-    summary = TextSummary(url=payload.url, summary="")
+    summary = TextSummary(
+        url=payload.url,
+        summary="",
+        summarization_method=payload.summarization_method,
+        sentence_count=payload.sentence_count,
+    )
     # Create/update the model object
     await summary.save()
     # Return the key

@@ -22,7 +22,7 @@ class TestSummaryUnit(object):
         """
 
         # Monkeypatch the generate summary function
-        def mock_generate_summary(summary_id, url, summarizer_specifier, sentence_count) -> None:
+        def mock_generate_summary(summary_id, url, summarization_method, sentence_count) -> None:
             return None
 
         monkeypatch.setattr(summaries, "generate_summary", mock_generate_summary)
@@ -35,7 +35,7 @@ class TestSummaryUnit(object):
 
         test_request_payload = {
             "url": "https://google.com/",
-            "summarizer_specifier": "lsa",
+            "summarization_method": "lsa",
             "sentence_count": 5,
         }
         expected_response = {"id": 1} | test_request_payload
@@ -99,14 +99,14 @@ class TestSummaryUnit(object):
             ),
             # An invalid summarizer
             (
-                {"url": "https://yahoo.com/", "summarizer_specifier": "invalid_summarizer"},
+                {"url": "https://yahoo.com/", "summarization_method": "invalid_summarizer"},
                 # Client-side error: Unprocessable Entity
                 422,
                 {
                     "detail": [
                         {
                             "type": "enum",
-                            "loc": ["body", "summarizer_specifier"],
+                            "loc": ["body", "summarization_method"],
                             "msg": "Input should be 'lsa', 'lex_rank', 'text_rank' or 'edmundson'",
                             "input": "invalid_summarizer",
                             "ctx": {"expected": "'lsa', 'lex_rank', 'text_rank' or 'edmundson'"},
@@ -165,11 +165,13 @@ class TestSummaryUnit(object):
         Test for read_summary on the happy path.
         """
         ios_time = datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
-        # Test SummarySchema
+        # Test TextSummarySchema
         test_summary_schema = {
             "id": 1,
             "url": "https://google.com/",
             "summary": "test summary",
+            "summarization_method": "lsa",
+            "sentence_count": 7,
             "created_at": ios_time,
         }
 
@@ -247,18 +249,24 @@ class TestSummaryUnit(object):
                 "id": 1,
                 "url": "https://google.com/",
                 "summary": "google",
+                "summarization_method": "lsa",
+                "sentence_count": 7,
                 "created_at": timestamps[0],
             },
             {
                 "id": 2,
                 "url": "https://yahoo.com/",
                 "summary": "yahoo",
+                "summarization_method": "edmundson",
+                "sentence_count": 12,
                 "created_at": timestamps[1],
             },
             {
                 "id": 3,
                 "url": "https://tesla.com/",
                 "summary": "tesla",
+                "summarization_method": "text_rank",
+                "sentence_count": 29,
                 "created_at": timestamps[2],
             },
         ]
@@ -280,6 +288,8 @@ class TestSummaryUnit(object):
             "id": 7,
             "url": "https://www.python.org/",
             "summary": "python programming",
+            "summarization_method": "lex_rank",
+            "sentence_count": 10,
             "created_at": datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"),
         }
 
@@ -295,7 +305,7 @@ class TestSummaryUnit(object):
 
         monkeypatch.setattr(crud, "delete", mock_delete)
 
-        # The response should be a SummarySchema instance matching the results from `mock_get`
+        # The response should be a TextSummarySchema instance matching the results from `mock_get`
         response = test_app.delete(f"/summaries/{test_record['id']}/")
         assert response.status_code == 200
         assert response.json() == test_record
@@ -357,7 +367,9 @@ class TestSummaryUnit(object):
             "url": test_update_payload["url"],  # New url from updated payload request body
             "summary": test_update_payload[
                 "update_summary"
-            ],  # New summary from update payload request body
+            ],  # New summary from update payload request body,
+            "summarization_method": "lsa",
+            "sentence_count": 12,
             "created_at": datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"),
         }
 
@@ -373,7 +385,7 @@ class TestSummaryUnit(object):
             f"/summaries/{test_summary_id}/",
             data=json.dumps(test_update_payload),
         )
-        # The response of the update operation should be an instance of SummarySchema
+        # The response of the update operation should be an instance of TextSummarySchema
         assert response.status_code == 200
         assert response.json() == test_updated_response
 

@@ -3,7 +3,7 @@ from enum import Enum
 from pydantic import AnyHttpUrl, BaseModel, Field
 
 
-class SummarizerSpecifier(str, Enum):
+class SummarizationMethod(str, Enum):
     """
     Enum representing available summarizer options.
 
@@ -30,14 +30,14 @@ class SummaryPayloadSchema(BaseModel):
     url : AnyHttpUrl
         The URL of the text for which a summary will be generated. This must be a
         valid HTTP or HTTPS URL.
-    summarizer_specifier : str
+    summarization_method : str
         The name of the summarizer to be used for generating the summary.
     sentence_count : Optional[int]
         The number of sentences to include in the summary. This field is optional.
     """
 
     url: AnyHttpUrl
-    summarizer_specifier: SummarizerSpecifier = SummarizerSpecifier.lsa
+    summarization_method: SummarizationMethod = SummarizationMethod.lsa
     sentence_count: int = Field(default=10, ge=5, le=30)
 
 
@@ -58,7 +58,7 @@ class SummaryResponseSchema(SummaryPayloadSchema):
     url : AnyHttpUrl
         The URL of the text for which a summary will be generated. This must be a
         valid HTTP or HTTPS URL.
-    summarizer_specifier : str
+    summarization_method : str
         The name of the summarizer to be used for generating the summary.
     sentence_count : Optional[int]
         The number of sentences to include in the summary. This field is optional.
