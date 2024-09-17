@@ -1,4 +1,20 @@
-from pydantic import AnyHttpUrl, BaseModel
+from enum import Enum
+
+from pydantic import AnyHttpUrl, BaseModel, Field
+
+
+class SummarizerSpecifier(str, Enum):
+    """
+    Enum representing available summarizer options.
+
+    This enum maps to the available summarizer implementations, ensuring that
+    only valid summarizer names are used in the request.
+    """
+
+    lsa = "lsa"
+    lex_rank = "lex_rank"
+    text_rank = "text_rank"
+    edmundson = "edmundson"
 
 
 class SummaryPayloadSchema(BaseModel):
@@ -6,17 +22,23 @@ class SummaryPayloadSchema(BaseModel):
     Schema representing the request body to generate a text summary.
 
     This schema is used to validate incoming requests where the client provides
-    a URL. The URL must be a valid HTTP or HTTPS URL. This schema serves as
-    the base model for other request and response schemas.
+    a URL, the summarizer name, and optionally the desired number of sentences
+    in the summary. The URL must be a valid HTTP or HTTPS URL.
 
     Attributes
     ----------
     url : AnyHttpUrl
         The URL of the text for which a summary will be generated. This must be a
         valid HTTP or HTTPS URL.
+    summarizer_specifier : str
+        The name of the summarizer to be used for generating the summary.
+    sentence_count : Optional[int]
+        The number of sentences to include in the summary. This field is optional.
     """
 
     url: AnyHttpUrl
+    summarizer_specifier: SummarizerSpecifier = SummarizerSpecifier.lsa
+    sentence_count: int = Field(default=10, ge=5, le=30)
 
 
 class SummaryResponseSchema(SummaryPayloadSchema):
@@ -33,24 +55,35 @@ class SummaryResponseSchema(SummaryPayloadSchema):
     id : int
         The unique identifier of the generated text summary. This is returned in
         response to a successful summary generation request with 201 status code.
+    url : AnyHttpUrl
+        The URL of the text for which a summary will be generated. This must be a
+        valid HTTP or HTTPS URL.
+    summarizer_specifier : str
+        The name of the summarizer to be used for generating the summary.
+    sentence_count : Optional[int]
+        The number of sentences to include in the summary. This field is optional.
     """
 
     id: int
 
 
-class SummaryUpdatePayloadSchema(SummaryPayloadSchema):
+class SummaryUpdatePayloadSchema(BaseModel):
     """
     Schema representing the request body for updating an existing text summary in the database.
 
-    This schema extends the `SummaryPayloadSchema` by including an additional `summary`
-    field, which contains the updated summary content. It is used when clients want to
-    modify the previously generated summary for a specific URL given a summary ID.
+    This schema includes a `url` and a `update_summary` field, which contains the updated summary content.
+    It is used when clients want to modify the previously generated summary for a specific URL given
+    a summary ID.
 
     Attributes
     ----------
-    summary : str
+    update_summary : str
         The updated text summary for the provided URL. This field contains the new
         summary content that will replace the previous one.
+    url : AnyHttpUrl
+        The URL of the text for which a summary will be generated. This must be a
+        valid HTTP or HTTPS URL.
     """
 
-    summary: str
+    url: AnyHttpUrl
+    update_summary: str

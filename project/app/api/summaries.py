@@ -32,14 +32,22 @@ async def create_summary(
     Returns
     -------
     SummaryResponseSchema
-        The newly created summary's response, including the summary URL and ID.
+        The newly created summary's response, including the `url`, `id`, `summarizer_specifier`, and `sentence_count`.
     """
     summary_id = await crud.post(payload)
     # Generate summary as a background task
-    background_tasks.add_task(generate_summary, summary_id, str(payload.url))
+    background_tasks.add_task(
+        generate_summary,
+        summary_id,
+        str(payload.url),
+        payload.summarizer_specifier,
+        int(payload.sentence_count),
+    )
     response = SummaryResponseSchema(
         url=payload.url,
         id=summary_id,
+        summarizer_specifier=payload.summarizer_specifier,
+        sentence_count=payload.sentence_count,
     )
     return response
 
@@ -84,10 +92,10 @@ async def read_all_summaries() -> List[SummarySchema]:  # type: ignore
     return await crud.get_all()
 
 
-@router.delete("/{id}/", response_model=SummaryResponseSchema)
+@router.delete("/{id}/", response_model=SummarySchema)
 async def remove_summary(
     id: Annotated[int, Path(title="The ID of the text summary to delete", gt=0)]
-) -> Dict:
+) -> SummarySchema:  # type: ignore
     """
     Delete a single summary based on its ID (i.e., primary key).
 
@@ -98,7 +106,7 @@ async def remove_summary(
 
     Returns
     -------
-    Dict
+    SummarySchema
         The retrieved summary response containing an ID and url.
 
     Raises
