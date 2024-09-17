@@ -19,19 +19,19 @@ class TestSummary(object):
             (
                 {
                     "url": "https://yahoo.com/",
-                    "summarizer_specifier": "lex_rank",
+                    "summarization_method": "lex_rank",
                     "sentence_count": 5,
                 },
                 {
                     "url": "https://yahoo.com/",
-                    "summarizer_specifier": "lex_rank",
+                    "summarization_method": "lex_rank",
                     "sentence_count": 5,
                 },
             ),
             # Default values
             (
                 {"url": "https://yahoo.com/"},
-                {"url": "https://yahoo.com/", "summarizer_specifier": "lsa", "sentence_count": 10},
+                {"url": "https://yahoo.com/", "summarization_method": "lsa", "sentence_count": 10},
             ),
         ],
         scope="function",
@@ -44,7 +44,7 @@ class TestSummary(object):
         """
 
         # Monkeypatch the generate summary function
-        def mock_generate_summary(summary_id, url, summarizer_specifier, sentence_count) -> None:
+        def mock_generate_summary(summary_id, url, summarization_method, sentence_count) -> None:
             return None
 
         monkeypatch.setattr(summaries, "generate_summary", mock_generate_summary)
@@ -54,8 +54,8 @@ class TestSummary(object):
         response_data = response.json()
         assert response_data["url"] == expected_response_sans_id["url"]
         assert (
-            response_data["summarizer_specifier"]
-            == expected_response_sans_id["summarizer_specifier"]
+            response_data["summarization_method"]
+            == expected_response_sans_id["summarization_method"]
         )
         assert response_data["sentence_count"] == expected_response_sans_id["sentence_count"]
 
@@ -113,14 +113,14 @@ class TestSummary(object):
             ),
             # An invalid summarizer
             (
-                {"url": "https://yahoo.com/", "summarizer_specifier": "invalid_summarizer"},
+                {"url": "https://yahoo.com/", "summarization_method": "invalid_summarizer"},
                 # Client-side error: Unprocessable Entity
                 422,
                 {
                     "detail": [
                         {
                             "type": "enum",
-                            "loc": ["body", "summarizer_specifier"],
+                            "loc": ["body", "summarization_method"],
                             "msg": "Input should be 'lsa', 'lex_rank', 'text_rank' or 'edmundson'",
                             "input": "invalid_summarizer",
                             "ctx": {"expected": "'lsa', 'lex_rank', 'text_rank' or 'edmundson'"},
@@ -180,14 +180,14 @@ class TestSummary(object):
         """
 
         # Monkeypatch the generate summary function
-        def mock_generate_summary(summary_id, url, summarizer_specifier, sentence_count) -> None:
+        def mock_generate_summary(summary_id, url, summarization_method, sentence_count) -> None:
             return None
 
         monkeypatch.setattr(summaries, "generate_summary", mock_generate_summary)
 
         payload = {
             "url": "https://google.com/",
-            "summarizer_specifier": "lex_rank",
+            "summarization_method": "lex_rank",
             "sentence_count": 5,
         }
         # Create summary and get the generated ID
@@ -198,11 +198,12 @@ class TestSummary(object):
         response = test_app_with_db.get(f"/summaries/{summary_id}")
         assert response.status_code == 200
 
+        # Fields should match
         response_data = response.json()
-        # The id field should match that from the SummaryResponseSchema
         assert response_data["id"] == summary_id
-        # The url field should match
         assert response_data["url"] == payload["url"]
+        assert response_data["summarization_method"] == payload["summarization_method"]
+        assert response_data["sentence_count"] == payload["sentence_count"]
         # The created_at fields should exist (and summary is an empty string initially)
         assert response_data["created_at"]
 
@@ -250,14 +251,14 @@ class TestSummary(object):
         """
 
         # Monkeypatch the generate summary function
-        def mock_generate_summary(summary_id, url, summarizer_specifier, sentence_count) -> None:
+        def mock_generate_summary(summary_id, url, summarization_method, sentence_count) -> None:
             return None
 
         monkeypatch.setattr(summaries, "generate_summary", mock_generate_summary)
 
         payload = {
             "url": "https://fastapi.tiangolo.com/",
-            "summarizer_specifier": "lsa",
+            "summarization_method": "lsa",
             "sentence_count": 17,
         }
         # Create summary and get the generated ID
@@ -268,7 +269,7 @@ class TestSummary(object):
         response = test_app_with_db.get("/summaries/")
         assert response.status_code == 200
 
-        # Response is a list of SummarySchema's
+        # Response is a list of TextSummarySchema's
         response_list = response.json()
         # Ensure that the newly created text summary is among the list of text summaries
         assert (len(list(filter(lambda summary_schema: summary_schema["id"] == summary_id, response_list))) == 1)  # fmt: skip
@@ -279,25 +280,27 @@ class TestSummary(object):
         """
 
         # Monkeypatch the generate summary function
-        def mock_generate_summary(summary_id, url, summarizer_specifier, sentence_count) -> None:
+        def mock_generate_summary(summary_id, url, summarization_method, sentence_count) -> None:
             return None
 
         monkeypatch.setattr(summaries, "generate_summary", mock_generate_summary)
 
         payload = {
             "url": "https://www.python.org/",
-            "summarizer_specifier": "edmundson",
+            "summarization_method": "edmundson",
             "sentence_count": 7,
         }
         # Create summary and get the generated ID
         response_post = test_app_with_db.post("/summaries/", data=json.dumps(payload))
         summary_id = response_post.json()["id"]
 
-        # The response should be a SummarySchema instance
+        # The response should be a TextSummarySchema instance
         response_delete = test_app_with_db.delete(f"/summaries/{summary_id}/")
         response_delete_data = response_delete.json()
         assert response_delete.status_code == 200
         assert response_delete_data["url"] == payload["url"]
+        assert response_delete_data["summarization_method"] == payload["summarization_method"]
+        assert response_delete_data["sentence_count"] == payload["sentence_count"]
         # The created_at must exist
         assert response_delete_data["created_at"]
 
@@ -347,7 +350,7 @@ class TestSummary(object):
         """
 
         # Monkeypatch the generate summary function
-        def mock_generate_summary(summary_id, url, summarizer_specifier, sentence_count) -> None:
+        def mock_generate_summary(summary_id, url, summarization_method, sentence_count) -> None:
             return None
 
         monkeypatch.setattr(summaries, "generate_summary", mock_generate_summary)
@@ -355,7 +358,7 @@ class TestSummary(object):
         # Create summary and get the generated ID
         payload = {
             "url": "https://isocpp.org/",
-            "summarizer_specifier": "text_rank",
+            "summarization_method": "text_rank",
             "sentence_count": 6,
         }
         response = test_app_with_db.post("/summaries/", data=json.dumps(payload))
@@ -368,11 +371,13 @@ class TestSummary(object):
         )
         assert response.status_code == 200
 
+        # Fields should match
         response_data = response.json()
-        # Ensure that the id and url match those from the post path operation
         assert response_data["id"] == summary_id
         assert response_data["url"] == payload["url"]
-        # The summary and created_at fields should exist, and summary should have been updateds
+        assert response_data["summarization_method"] == payload["summarization_method"]
+        assert response_data["sentence_count"] == payload["sentence_count"]
+        # The summary and created_at fields should exist, and the summary text should have been updated
         assert response_data["summary"] == "Updated summary"
         assert response_data["created_at"]
 
