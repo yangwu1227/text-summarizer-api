@@ -4,8 +4,8 @@ on:
     branches:
       - main
     paths:
-        - docs/**
-        - mkdocs.yml
+        - project/docs/**
+        - project/mkdocs.yml
         - .github/workflows/deploy_docs.yml
 
 permissions:

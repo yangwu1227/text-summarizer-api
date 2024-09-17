@@ -66,7 +66,7 @@ To build the images and run the containers in the background:
 $ docker compose up --detach --build
 ```
 
-Directories such as `app/`, `tests/`, `migrations/`, and the `pyproject.toml` file are mounted to the `web` service. This allows for automatically reloading of the application when changes are made to the code.
+Directories such as `app/`, `tests/`, `migrations/`, and the `pyproject.toml` file are **bind-mounted** to their respective counterparts in the `web` service container. This setup allows for automatic reloading of the application when changes are made to the code during development.
 
 To stop the containers without removing them:
 
