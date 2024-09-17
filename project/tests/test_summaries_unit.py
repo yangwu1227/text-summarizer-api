@@ -22,7 +22,7 @@ class TestSummaryUnit(object):
         """
 
         # Monkeypatch the generate summary function
-        def mock_generate_summary(summary_id, url):
+        def mock_generate_summary(summary_id, url, summarizer_specifier, sentence_count) -> None:
             return None
 
         monkeypatch.setattr(summaries, "generate_summary", mock_generate_summary)
@@ -33,9 +33,12 @@ class TestSummaryUnit(object):
 
         monkeypatch.setattr(crud, "post", mock_post)
 
-        test_url = "https://google.com/"
-        test_request_payload = {"url": test_url}
-        expected_response = {"id": 1, "url": test_url}
+        test_request_payload = {
+            "url": "https://google.com/",
+            "summarizer_specifier": "lsa",
+            "sentence_count": 5,
+        }
+        expected_response = {"id": 1} | test_request_payload
         # This should be a SummaryResponseSchema instance
         response = test_app.post("/summaries/", data=json.dumps(test_request_payload))
 
@@ -94,6 +97,56 @@ class TestSummaryUnit(object):
                     ]
                 },
             ),
+            # An invalid summarizer
+            (
+                {"url": "https://yahoo.com/", "summarizer_specifier": "invalid_summarizer"},
+                # Client-side error: Unprocessable Entity
+                422,
+                {
+                    "detail": [
+                        {
+                            "type": "enum",
+                            "loc": ["body", "summarizer_specifier"],
+                            "msg": "Input should be 'lsa', 'lex_rank', 'text_rank' or 'edmundson'",
+                            "input": "invalid_summarizer",
+                            "ctx": {"expected": "'lsa', 'lex_rank', 'text_rank' or 'edmundson'"},
+                        }
+                    ]
+                },
+            ),
+            # Sentence count out of range
+            (
+                {"url": "https://yahoo.com/", "sentence_count": 3},
+                # Client-side error: Unprocessable Entity
+                422,
+                {
+                    "detail": [
+                        {
+                            "type": "greater_than_equal",
+                            "loc": ["body", "sentence_count"],
+                            "msg": "Input should be greater than or equal to 5",
+                            "input": 3,
+                            "ctx": {"ge": 5},
+                        }
+                    ]
+                },
+            ),
+            (
+                {"url": "https://yahoo.com/", "sentence_count": 31},
+                # Client-side error: Unprocessable Entity
+                422,
+                {
+                    "detail": [
+                        {
+                            "type": "less_than_equal",
+                            "loc": ["body", "sentence_count"],
+                            "msg": "Input should be less than or equal to 30",
+                            "input": 31,
+                            "ctx": {"le": 30},
+                        }
+                    ]
+                },
+            ),
         ],
         scope="function",
     )
@@ -105,7 +158,6 @@ class TestSummaryUnit(object):
         """
         response = test_app.post("/summaries/", data=json.dumps(payload))
         assert response.status_code == expected_status_code
-        print(response.json())
         assert response.json() == expected_response
 
     def test_read_summary_unit(self, test_app, monkeypatch) -> None:
@@ -243,10 +295,10 @@ class TestSummaryUnit(object):
 
         monkeypatch.setattr(crud, "delete", mock_delete)
 
-        # The response should be a SummaryResponseSchema instance
+        # The response should be a SummarySchema instance matching the results from `mock_get`
         response = test_app.delete(f"/summaries/{test_record['id']}/")
         assert response.status_code == 200
-        assert response.json() == {"id": test_record["id"], "url": test_record["url"]}
+        assert response.json() == test_record
 
     @pytest.mark.parametrize(
         "id, expected_status_code, expected_response",
@@ -297,16 +349,19 @@ class TestSummaryUnit(object):
         """
         Test for update_summary on the happy path.
         """
-        test_update_payload = {"url": "https://yahoo.com/", "summary": "Updated summary"}
+        # Test SummaryUpdatePayloadSchema
+        test_update_payload = {"url": "https://yahoo.com/", "update_summary": "Updated summary"}
+        test_summary_id = 12
         test_updated_response = {
-            "id": 12,
+            "id": test_summary_id,
             "url": test_update_payload["url"],  # New url from updated payload request body
             "summary": test_update_payload[
-                "summary"
+                "update_summary"
             ],  # New summary from update payload request body
             "created_at": datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"),
         }
 
+        # Simulate the returned dict of the put crud operation
         async def mock_put(
             id: int, payload: pydantic.SummaryUpdatePayloadSchema
         ) -> Union[Dict, None]:
@@ -315,9 +370,10 @@ class TestSummaryUnit(object):
         monkeypatch.setattr(crud, "put", mock_put)
 
         response = test_app.put(
-            f"/summaries/{12}/",
+            f"/summaries/{test_summary_id}/",
             data=json.dumps(test_update_payload),
         )
+        # The response of the update operation should be an instance of SummarySchema
         assert response.status_code == 200
         assert response.json() == test_updated_response
 
@@ -327,7 +383,7 @@ class TestSummaryUnit(object):
             # Non-existent ID results in 404 not found status code
             (
                 maxsize,
-                {"url": "https://google.com/", "summary": "Updated summary"},
+                {"url": "https://google.com/", "update_summary": "Updated summary"},
                 404,
                 {
                     "detail": SummaryNotFoundException.detail,
@@ -336,7 +392,7 @@ class TestSummaryUnit(object):
             # Invalid ID (i.e. < 1) results in 422 cannot be processed by server status code
             (
                 0,
-                {"url": "https://google.com/", "summary": "Updated summary"},
+                {"url": "https://google.com/", "update_summary": "Updated summary"},
                 422,
                 {
                     "detail": [
@@ -365,7 +421,7 @@ class TestSummaryUnit(object):
                         },
                         {
                             "type": "missing",
-                            "loc": ["body", "summary"],
+                            "loc": ["body", "update_summary"],
                             "msg": "Field required",
                             "input": {},
                         },
@@ -381,7 +437,7 @@ class TestSummaryUnit(object):
                     "detail": [
                         {
                             "type": "missing",
-                            "loc": ["body", "summary"],
+                            "loc": ["body", "update_summary"],
                             "msg": "Field required",
                             "input": {"url": "https://google.com/"},
                         }
@@ -391,7 +447,7 @@ class TestSummaryUnit(object):
         ],
         scope="function",
     )
-    def test_update_summary_invalid_id_or_request(
+    def test_update_summary_invalid_id_or_request_unit(
         self, test_app, monkeypatch, id, payload, expected_status_code, expected_response
     ) -> None:
         """
@@ -410,24 +466,23 @@ class TestSummaryUnit(object):
         assert response.status_code == expected_status_code
         assert response.json() == expected_response
 
-
-def test_update_summary_invalid_url(test_app) -> None:
-    """
-    Test for update_summary given invalid url in the request body with valid ID and updated summary.
-    """
-    response = test_app.put(
-        "/summaries/1/",
-        data=json.dumps({"url": "invalid://url", "summary": "Updated summary"}),
-    )
-    assert response.status_code == 422
-    assert response.json() == {
-        "detail": [
-            {
-                "type": "url_scheme",
-                "loc": ["body", "url"],
-                "msg": "URL scheme should be 'http' or 'https'",
-                "input": "invalid://url",
-                "ctx": {"expected_schemes": "'http' or 'https'"},
-            }
-        ]
-    }
+    def test_update_summary_invalid_url_unit(self, test_app) -> None:
+        """
+        Test for update_summary given invalid url in the request body with valid ID and updated summary.
+        """
+        response = test_app.put(
+            "/summaries/1/",
+            data=json.dumps({"url": "invalid://url", "update_summary": "Updated summary"}),
+        )
+        assert response.status_code == 422
+        assert response.json() == {
+            "detail": [
+                {
+                    "type": "url_scheme",
+                    "loc": ["body", "url"],
+                    "msg": "URL scheme should be 'http' or 'https'",
+                    "input": "invalid://url",
+                    "ctx": {"expected_schemes": "'http' or 'https'"},
+                }
+            ]
+        }
