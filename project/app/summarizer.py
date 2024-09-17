@@ -8,7 +8,7 @@ from sumy.summarizers.lsa import LsaSummarizer
 from sumy.summarizers.text_rank import TextRankSummarizer
 from sumy.utils import get_stop_words
 
-from app.models.pydantic import SummarizerSpecifier
+from app.models.pydantic import SummarizationMethod
 from app.models.tortoise import TextSummary
 
 LANGUAGE = "english"
@@ -23,7 +23,7 @@ summarizers = {
 
 
 async def generate_summary(
-    id: int, url: str, summarizer_specifier: SummarizerSpecifier, sentence_count: int
+    id: int, url: str, summarization_method: SummarizationMethod, sentence_count: int
 ) -> None:
     """
     Create a summary of an article from a given URL using the `sumy` package. The summarization methods available include:
@@ -38,7 +38,7 @@ async def generate_summary(
         The generated id for this summary record.
     url : str
         The URL of the article to summarize.
-    summarizer_specifier : SummarizerSpecifier
+    summarization_method : SummarizationMethod
         The summarization algorithm to use.
     sentence_count : int
         The number of sentences in the summary.
@@ -55,7 +55,7 @@ async def generate_summary(
 
     try:
         # Note that this is an enum instance
-        summarizer_name = summarizer_specifier.value
+        summarizer_name = summarization_method.value
         # Parse content from the provided URL
         parser = HtmlParser.from_url(url, Tokenizer(LANGUAGE))
 

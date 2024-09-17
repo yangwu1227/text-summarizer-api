@@ -1,4 +1,4 @@
-from typing import Annotated, Dict, List
+from typing import Annotated, List
 
 from fastapi import APIRouter, BackgroundTasks, Path
 
@@ -9,7 +9,7 @@ from app.models.pydantic import (
     SummaryResponseSchema,
     SummaryUpdatePayloadSchema,
 )
-from app.models.tortoise import SummarySchema
+from app.models.tortoise import TextSummarySchema
 from app.summarizer import generate_summary
 
 router = APIRouter()
@@ -32,7 +32,7 @@ async def create_summary(
     Returns
     -------
     SummaryResponseSchema
-        The newly created summary's response, including the `url`, `id`, `summarizer_specifier`, and `sentence_count`.
+        The newly created summary's response, including the `url`, `id`, `summarization_method`, and `sentence_count`.
     """
     summary_id = await crud.post(payload)
     # Generate summary as a background task
@@ -40,20 +40,20 @@ async def create_summary(
         generate_summary,
         summary_id,
         str(payload.url),
-        payload.summarizer_specifier,
+        payload.summarization_method,
         int(payload.sentence_count),
     )
     response = SummaryResponseSchema(
         url=payload.url,
         id=summary_id,
-        summarizer_specifier=payload.summarizer_specifier,
+        summarization_method=payload.summarization_method,
         sentence_count=payload.sentence_count,
     )
     return response
 
 
-@router.get("/{id}/", response_model=SummarySchema)
-async def read_summary(id: Annotated[int, Path(title="The ID of the text summary to query", gt=0)]) -> SummarySchema:  # type: ignore
+@router.get("/{id}/", response_model=TextSummarySchema)
+async def read_summary(id: Annotated[int, Path(title="The ID of the text summary to query", gt=0)]) -> TextSummarySchema:  # type: ignore
     """
     Retrieve a single summary based on its ID (i.e., primary key).
 
@@ -64,7 +64,7 @@ async def read_summary(id: Annotated[int, Path(title="The ID of the text summary
 
     Returns
     -------
-    SummarySchema
+    TextSummarySchema
         The retrieved summary object.
 
     Raises
@@ -79,23 +79,23 @@ async def read_summary(id: Annotated[int, Path(title="The ID of the text summary
     return summary
 
 
-@router.get("/", response_model=List[SummarySchema])  # type: ignore
-async def read_all_summaries() -> List[SummarySchema]:  # type: ignore
+@router.get("/", response_model=List[TextSummarySchema])  # type: ignore
+async def read_all_summaries() -> List[TextSummarySchema]:  # type: ignore
     """
     Retrieve all summaries.
 
     Returns
     -------
-    List[SummarySchema]
+    List[TextSummarySchema]
         A list of all the summaries.
     """
     return await crud.get_all()
 
 
-@router.delete("/{id}/", response_model=SummarySchema)
+@router.delete("/{id}/", response_model=TextSummarySchema)
 async def remove_summary(
     id: Annotated[int, Path(title="The ID of the text summary to delete", gt=0)]
-) -> SummarySchema:  # type: ignore
+) -> TextSummarySchema:  # type: ignore
     """
     Delete a single summary based on its ID (i.e., primary key).
 
@@ -106,7 +106,7 @@ async def remove_summary(
 
     Returns
     -------
-    SummarySchema
+    TextSummarySchema
         The retrieved summary response containing an ID and url.
 
     Raises
@@ -124,11 +124,11 @@ async def remove_summary(
     return summary
 
 
-@router.put("/{id}/", response_model=SummarySchema)
+@router.put("/{id}/", response_model=TextSummarySchema)
 async def update_summary(
     id: Annotated[int, Path(title="The ID of the text summary to update", gt=0)],
     payload: SummaryUpdatePayloadSchema,
-) -> SummarySchema:  # type:ignore
+) -> TextSummarySchema:  # type:ignore
     """
     Update a text summary by its ID. Both the URL and the summary text are updated based on the provided payload.
 
@@ -141,7 +141,7 @@ async def update_summary(
 
     Returns
     -------
-    SummarySchema
+    TextSummarySchema
         The updated summary object if the update is successful.
 
     Raises
