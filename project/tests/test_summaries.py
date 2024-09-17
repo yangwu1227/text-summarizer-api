@@ -12,21 +12,52 @@ class TestSummary(object):
     Tests for GET /summaries, GET /summaries/:id, POST /summaries, PUT /summaries/:id, and DELETE /summaries/:id.
     """
 
-    def test_create_summary(self, test_app_with_db, monkeypatch) -> None:
+    @pytest.mark.parametrize(
+        "payload, expected_response_sans_id",
+        [
+            # Non-default summarizer and sentence count
+            (
+                {
+                    "url": "https://yahoo.com/",
+                    "summarizer_specifier": "lex_rank",
+                    "sentence_count": 5,
+                },
+                {
+                    "url": "https://yahoo.com/",
+                    "summarizer_specifier": "lex_rank",
+                    "sentence_count": 5,
+                },
+            ),
+            # Default values
+            (
+                {"url": "https://yahoo.com/"},
+                {"url": "https://yahoo.com/", "summarizer_specifier": "lsa", "sentence_count": 10},
+            ),
+        ],
+        scope="function",
+    )
+    def test_create_summary(
+        self, test_app_with_db, monkeypatch, payload, expected_response_sans_id
+    ) -> None:
         """
         Test for create_summary on the happy path.
         """
 
         # Monkeypatch the generate summary function
-        def mock_generate_summary(summary_id, url):
+        def mock_generate_summary(summary_id, url, summarizer_specifier, sentence_count) -> None:
             return None
 
         monkeypatch.setattr(summaries, "generate_summary", mock_generate_summary)
 
-        test_url = "https://yahoo.com/"
-        response = test_app_with_db.post("/summaries/", data=json.dumps({"url": test_url}))
+        response = test_app_with_db.post("/summaries/", data=json.dumps(payload))
         assert response.status_code == 201
-        assert response.json()["url"] == test_url
+        response_data = response.json()
+        assert response_data["url"] == expected_response_sans_id["url"]
+        assert (
+            response_data["summarizer_specifier"]
+            == expected_response_sans_id["summarizer_specifier"]
+        )
+        assert response_data["sentence_count"] == expected_response_sans_id["sentence_count"]
 
     @pytest.mark.parametrize(
         "payload, expected_status_code, expected_response",
@@ -80,6 +111,56 @@ class TestSummary(object):
                     ]
                 },
             ),
+            # An invalid summarizer
+            (
+                {"url": "https://yahoo.com/", "summarizer_specifier": "invalid_summarizer"},
+                # Client-side error: Unprocessable Entity
+                422,
+                {
+                    "detail": [
+                        {
+                            "type": "enum",
+                            "loc": ["body", "summarizer_specifier"],
+                            "msg": "Input should be 'lsa', 'lex_rank', 'text_rank' or 'edmundson'",
+                            "input": "invalid_summarizer",
+                            "ctx": {"expected": "'lsa', 'lex_rank', 'text_rank' or 'edmundson'"},
+                        }
+                    ]
+                },
+            ),
+            # Sentence count out of range
+            (
+                {"url": "https://yahoo.com/", "sentence_count": 3},
+                # Client-side error: Unprocessable Entity
+                422,
+                {
+                    "detail": [
+                        {
+                            "type": "greater_than_equal",
+                            "loc": ["body", "sentence_count"],
+                            "msg": "Input should be greater than or equal to 5",
+                            "input": 3,
+                            "ctx": {"ge": 5},
+                        }
+                    ]
+                },
+            ),
+            (
+                {"url": "https://yahoo.com/", "sentence_count": 31},
+                # Client-side error: Unprocessable Entity
+                422,
+                {
+                    "detail": [
+                        {
+                            "type": "less_than_equal",
+                            "loc": ["body", "sentence_count"],
+                            "msg": "Input should be less than or equal to 30",
+                            "input": 31,
+                            "ctx": {"le": 30},
+                        }
+                    ]
+                },
+            ),
         ],
         scope="function",
     )
@@ -91,7 +172,6 @@ class TestSummary(object):
         """
         response = test_app_with_db.post("/summaries/", data=json.dumps(payload))
         assert response.status_code == expected_status_code
-        print(response.json())
         assert response.json() == expected_response
 
     def test_read_summary(self, test_app_with_db, monkeypatch) -> None:
@@ -100,14 +180,18 @@ class TestSummary(object):
         """
 
         # Monkeypatch the generate summary function
-        def mock_generate_summary(summary_id, url):
+        def mock_generate_summary(summary_id, url, summarizer_specifier, sentence_count) -> None:
             return None
 
         monkeypatch.setattr(summaries, "generate_summary", mock_generate_summary)
 
-        test_url = "https://google.com/"
+        payload = {
+            "url": "https://google.com/",
+            "summarizer_specifier": "lex_rank",
+            "sentence_count": 5,
+        }
         # Create summary and get the generated ID
-        response = test_app_with_db.post("/summaries/", data=json.dumps({"url": test_url}))
+        response = test_app_with_db.post("/summaries/", data=json.dumps(payload))
         summary_id = response.json()["id"]
 
         # Response for a get operation
@@ -118,8 +202,8 @@ class TestSummary(object):
         # The id field should match that from the SummaryResponseSchema
         assert response_data["id"] == summary_id
         # The url field should match
-        assert response_data["url"] == test_url
-        # The created_at fields should exist (summary is an empty string initially)
+        assert response_data["url"] == payload["url"]
+        # The created_at fields should exist (and summary is an empty string initially)
         assert response_data["created_at"]
 
     @pytest.mark.parametrize(
@@ -166,14 +250,18 @@ class TestSummary(object):
         """
 
         # Monkeypatch the generate summary function
-        def mock_generate_summary(summary_id, url):
+        def mock_generate_summary(summary_id, url, summarizer_specifier, sentence_count) -> None:
             return None
 
         monkeypatch.setattr(summaries, "generate_summary", mock_generate_summary)
 
-        # Post a new url so a record is created in the database
-        test_url = "https://fastapi.tiangolo.com/"
-        response = test_app_with_db.post("/summaries/", data=json.dumps({"url": test_url}))
+        payload = {
+            "url": "https://fastapi.tiangolo.com/",
+            "summarizer_specifier": "lsa",
+            "sentence_count": 17,
+        }
+        # Create summary and get the generated ID
+        response = test_app_with_db.post("/summaries/", data=json.dumps(payload))
         summary_id = response.json()["id"]
 
         # Get all summaries
@@ -191,19 +279,27 @@ class TestSummary(object):
         """
 
         # Monkeypatch the generate summary function
-        def mock_generate_summary(summary_id, url):
+        def mock_generate_summary(summary_id, url, summarizer_specifier, sentence_count) -> None:
             return None
 
         monkeypatch.setattr(summaries, "generate_summary", mock_generate_summary)
 
-        test_url = "https://www.python.org/"
-        response = test_app_with_db.post("/summaries/", data=json.dumps({"url": test_url}))
-        summary_id = response.json()["id"]
+        payload = {
+            "url": "https://www.python.org/",
+            "summarizer_specifier": "edmundson",
+            "sentence_count": 7,
+        }
+        # Create summary and get the generated ID
+        response_post = test_app_with_db.post("/summaries/", data=json.dumps(payload))
+        summary_id = response_post.json()["id"]
 
-        # The response should be a SummaryResponseSchema instance
-        response = test_app_with_db.delete(f"/summaries/{summary_id}/")
-        assert response.status_code == 200
-        assert response.json() == {"id": summary_id, "url": test_url}
+        # The response should be a SummarySchema instance
+        response_delete = test_app_with_db.delete(f"/summaries/{summary_id}/")
+        response_delete_data = response_delete.json()
+        assert response_delete.status_code == 200
+        assert response_delete_data["url"] == payload["url"]
+        # The created_at must exist
+        assert response_delete_data["created_at"]
 
     @pytest.mark.parametrize(
         "id, expected_status_code, expected_response",
@@ -251,26 +347,32 @@ class TestSummary(object):
         """
 
         # Monkeypatch the generate summary function
-        def mock_generate_summary(summary_id, url):
+        def mock_generate_summary(summary_id, url, summarizer_specifier, sentence_count) -> None:
             return None
 
         monkeypatch.setattr(summaries, "generate_summary", mock_generate_summary)
 
-        test_url = "https://yahoo.com/"
-        response = test_app_with_db.post("/summaries/", data=json.dumps({"url": test_url}))
+        # Create summary and get the generated ID
+        payload = {
+            "url": "https://isocpp.org/",
+            "summarizer_specifier": "text_rank",
+            "sentence_count": 6,
+        }
+        response = test_app_with_db.post("/summaries/", data=json.dumps(payload))
         summary_id = response.json()["id"]
 
+        # Update the summary for the summary generated above
         response = test_app_with_db.put(
             f"/summaries/{summary_id}/",
-            data=json.dumps({"url": test_url, "summary": "Updated summary"}),
+            data=json.dumps({"url": payload["url"], "update_summary": "Updated summary"}),
         )
         assert response.status_code == 200
 
         response_data = response.json()
         # Ensure that the id and url match those from the post path operation
         assert response_data["id"] == summary_id
-        assert response_data["url"] == test_url
-        # The summary and created_at fields should exist, and summary should match the user friendly feedback
+        assert response_data["url"] == payload["url"]
+        # The summary and created_at fields should exist, and summary should have been updateds
         assert response_data["summary"] == "Updated summary"
         assert response_data["created_at"]
 
@@ -280,7 +382,7 @@ class TestSummary(object):
             # Non-existent ID results in 404 not found status code
             (
                 maxsize,
-                {"url": "https://google.com/", "summary": "Updated summary"},
+                {"url": "https://google.com/", "update_summary": "Updated summary"},
                 404,
                 {
                     "detail": SummaryNotFoundException.detail,
@@ -289,7 +391,7 @@ class TestSummary(object):
             # Invalid ID (i.e. < 1) results in 422 cannot be processed by server status code
             (
                 0,
-                {"url": "https://google.com/", "summary": "Updated summary"},
+                {"url": "https://google.com/", "update_summary": "Updated summary"},
                 422,
                 {
                     "detail": [
@@ -318,7 +420,7 @@ class TestSummary(object):
                         },
                         {
                             "type": "missing",
-                            "loc": ["body", "summary"],
+                            "loc": ["body", "update_summary"],
                             "msg": "Field required",
                             "input": {},
                         },
@@ -334,7 +436,7 @@ class TestSummary(object):
                     "detail": [
                         {
                             "type": "missing",
-                            "loc": ["body", "summary"],
+                            "loc": ["body", "update_summary"],
                             "msg": "Field required",
                             "input": {"url": "https://google.com/"},
                         }
@@ -354,24 +456,23 @@ class TestSummary(object):
         assert response.status_code == expected_status_code
         assert response.json() == expected_response
 
-
-def test_update_summary_invalid_url(test_app_with_db) -> None:
-    """
-    Test for update_summary given invalid url in the request body with valid ID and updated summary.
-    """
-    response = test_app_with_db.put(
-        "/summaries/1/",
-        data=json.dumps({"url": "invalid://url", "summary": "Updated summary"}),
-    )
-    assert response.status_code == 422
-    assert response.json() == {
-        "detail": [
-            {
-                "type": "url_scheme",
-                "loc": ["body", "url"],
-                "msg": "URL scheme should be 'http' or 'https'",
-                "input": "invalid://url",
-                "ctx": {"expected_schemes": "'http' or 'https'"},
-            }
-        ]
-    }
+    def test_update_summary_invalid_url(self, test_app_with_db) -> None:
+        """
+        Test for update_summary given invalid url in the request body with valid ID and updated summary.
+        """
+        response = test_app_with_db.put(
+            "/summaries/1/",
+            data=json.dumps({"url": "invalid://url", "update_summary": "Updated summary"}),
+        )
+        assert response.status_code == 422
+        assert response.json() == {
+            "detail": [
+                {
+                    "type": "url_scheme",
+                    "loc": ["body", "url"],
+                    "msg": "URL scheme should be 'http' or 'https'",
+                    "input": "invalid://url",
+                    "ctx": {"expected_schemes": "'http' or 'https'"},
+                }
+            ]
+        }

@@ -12,7 +12,8 @@ async def post(payload: SummaryPayloadSchema) -> int:
     Parameters
     ----------
     payload : SummaryPayloadSchema
-        The payload containing a valid url required to create the new summary.
+        The payload containing a valid url, the string name of the algorithm to use, and optionally
+        an integer representing the number of sentences to include in the output.
 
     Returns
     -------
@@ -96,7 +97,9 @@ async def put(id: int, payload: SummaryUpdatePayloadSchema) -> Union[Dict, None]
         The updated summary as a dictionary if successful, or None if no summary was found for the given ID.
     """
     # The return object is an instance of UpdateQuery or None depending on if filter finds the given ID
-    summary = await TextSummary.filter(id=id).update(url=payload.url, summary=payload.summary)
+    summary = await TextSummary.filter(id=id).update(
+        url=payload.url, summary=payload.update_summary
+    )
     if summary:
         # Update and return the updated summary schema {"id": ..., "url": ..., "summary": ...}
         updated_summary_schema = await TextSummary.filter(id=id).first().values()

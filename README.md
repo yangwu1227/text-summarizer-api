@@ -37,6 +37,20 @@ This project creates an asynchronous RESTful API built with Python, FastAPI, and
     -d '{"url": "https://realpython.com/pointers-in-python/"}'
     ```
 
+    The payload also supports two additional optional parameters:
+    - `summarizer_specifier`: Specifies the summarization algorithm. Supported values are `lsa`, `lex_rank`, `text_rank`, and `edmundson`. If not provided, the default is `lsa`.
+    - `sentence_count`: Specifies the number of sentences in the generated summary, with a range of 5 to 30. If not provided, the default is 10.
+
+    Example request with all parameters:
+
+    ```bash
+    curl -X POST "https://text-summarizer-d918be4fb9c8.herokuapp.com/summaries/" \
+    -H "Content-Type: application/json" \
+    -d '{"url": "https://realpython.com/pointers-in-python/", "summarizer_specifier": "lex_rank", "sentence_count": 15}'
+    ```
+
+    For more information on the supported summarization algorithms, see the [sumy documentation](https://github.com/miso-belica/sumy/blob/main/docs/summarizators.md).
+
 - **Get a summary:** `GET /summaries/{id}/`
 
   ```bash
@@ -56,7 +70,7 @@ This project creates an asynchronous RESTful API built with Python, FastAPI, and
   ```bash
   curl -X PUT "https://text-summarizer-d918be4fb9c8.herokuapp.com/summaries/{id}/" \
   -H "Content-Type: application/json" \
-  -d '{"url": "https://realpython.com/pointers-in-python/", "summary": "Updated summary text"}'
+  -d '{"url": "https://realpython.com/pointers-in-python/", "update_summary": "Updated summary text"}'
   ```
 
 - **Delete a summary:** `DELETE /summaries/{id}/`
