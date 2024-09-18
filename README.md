@@ -79,10 +79,6 @@ This project creates an asynchronous RESTful API built with Python, FastAPI, and
   curl -X DELETE "https://text-summarizer-d918be4fb9c8.herokuapp.com/summaries/{id}/" 
   ```
 
-## Testing the API
-
-Test the API via the [Swagger UI](https://text-summarizer-d918be4fb9c8.herokuapp.com/docs), which provides a user-friendly interface for interacting with the API endpoints.
-
 ## Deployment
 
 The application is deployed on Heroku using Docker. The `scripts/` directory contains shell scripts for automating the deployment process:
