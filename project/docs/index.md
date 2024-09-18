@@ -20,7 +20,7 @@ The dependencies are broken into groups:
 
 * Development dependencies: required for development, testing, and documentation.
 
-The specified python version in `pyproject.toml` is `3.11`, and so a **python 3.11** interpreter should be used. 
+The specified python version in `pyproject.toml` is `>=3.11`, and so a **python 3.11** interpreter should be used. 
 
 #### Conda
 
@@ -34,15 +34,14 @@ $ pdm use -f $(which python3)
 $ pdm install
 ```
 
-#### Pyenv
+#### Vitualenv
 
-To do so with [pyenv](https://github.com/pyenv/pyenv):
+To do so with [virtualenv](https://github.com/pypa/virtualenv), use the [pdm venv](https://pdm-project.org/en/latest/reference/cli/#venv) command:
 
 ```bash 
-$ pyenv install --list | grep " 3\.\(10\|11\|12\)\."
-$ pyenv install 3.11.9
-# See https://pdm-project.org/latest/reference/cli/#use
-$ pdm use -f $(pyenv shell 3.11.9; pyenv which python3)
+$ pdm venv create --name text_summarizer_api --with virtualenv 3.11.9 
+# To activate the virtual environment
+$ eval $(pdm venv activate text_summarizer_api) 
 $ pdm install
 ```
 
@@ -50,11 +49,11 @@ $ pdm install
 
 ## Docker Compose 
 
-The development environment is set up using [Docker Compose](https://docs.docker.com/compose/). This setup defines two services--- `web` (for the FastAPI application) and `web-db` (for the PostgreSQL database).
+The development environment is set up using [Docker Compose](https://docs.docker.com/compose/). This setup defines two services: 
 
 * **web**: sets up the application based on `dev.Dockerfile`.
 
-* **wev-db**: sets up a PostgreSQL database based on `db.Dockerfile`, which simply [add](https://docs.docker.com/reference/dockerfile/#add)s a `.sql` file to the container at `/docker-entrypoint-initdb.d/`.
+* **wev-db**: sets up a PostgreSQL database based on `db.Dockerfile`, which simply [Add](https://docs.docker.com/reference/dockerfile/#add)s a `.sql` file to the container at `/docker-entrypoint-initdb.d/`. Two databases are created: `web_dev` for development and `web_test` for testing; neither is used in production.
 
 ### Build and Run the Services
 
@@ -157,7 +156,7 @@ See the aerich's [usage](https://github.com/tortoise/aerich?tab=readme-ov-file#u
 
 ## PSQL
 
-The PostgreSQL database can be accessed using [psql](https://www.postgresql.org/docs/current/app-psql.html), which is a terminal-based front-end to PostgreSQL.
+The PostgreSQL database can be accessed using [psql](https://www.postgresql.org/docs/current/app-psql.html), a terminal-based front-end to PostgreSQL.
 
 ```bash
 $ docker exec -it <service-name> psql -U postgres
