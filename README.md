@@ -94,3 +94,5 @@ The application is deployed on Heroku using Docker. The `scripts/` directory con
 5. `platform_selection.sh`: Prompts the user to select a target platform for Docker image builds: `amd64`, `arm64`, or both. Sourced by other build scripts to standardize platform selection.
 
 6. `release.sh`: Releases the Docker image to Heroku by updating the app's formation via the Heroku API. Fetches the image ID and automates deployment. Used in CI pipelines for automated releases.
+
+7. `run_black_isort.sh`: Runs `black` and `isort` on the project files to format code and sort imports.
