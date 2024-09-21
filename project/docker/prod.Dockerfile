@@ -11,7 +11,7 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     # Environment and testing are set to prod and 0 respectively
     ENVIRONMENT=prod \
     TESTING=0 \
-    # Set the home directory and app home directory\
+    # Set the home directory and app home directory
     USER=app_user \
     USER_GROUP=app_group \
     HOME=/home/$USER \
@@ -45,7 +45,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 # Copy just .venv from the build stage
 COPY --from=build-stage $PROJECT_ROOT_PATH/.venv $PROJECT_ROOT_PATH/.venv
-ENV PATH=${PROJECT_ROOT_PATH}/.venv/bin:$PATH
+ENV PATH=$PROJECT_ROOT_PATH/.venv/bin:$PATH
 WORKDIR $PROJECT_ROOT_PATH
 COPY ./ ./
 

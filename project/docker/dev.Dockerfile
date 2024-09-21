@@ -34,7 +34,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 # Copy just .venv from the build stage
 COPY --from=build-stage $PROJECT_ROOT_PATH/.venv $PROJECT_ROOT_PATH/.venv
-ENV PATH=${PROJECT_ROOT_PATH}/.venv/bin:$PATH
+ENV PATH=$PROJECT_ROOT_PATH/.venv/bin:$PATH
 WORKDIR $PROJECT_ROOT_PATH
 # Copy all source code from the build context (i.e., the local project directory) onto the container under $PROJECT_ROOT_PATH
 COPY ./ ./
