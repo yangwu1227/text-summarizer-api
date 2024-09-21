@@ -10,7 +10,7 @@ on:
       - 'project/pyproject.toml'
       - 'project/pdm.lock'
       - 'project/docker/prod.Dockerfile'
-      - '.github/workflows/ci-cd.yml'
+      - '.github/workflows/ci_cd.yml'
       
 env:
   MODE: prod
