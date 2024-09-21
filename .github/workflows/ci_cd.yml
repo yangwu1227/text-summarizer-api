@@ -46,7 +46,7 @@ jobs:
             --file ./project/docker/${{ env.MODE }}.Dockerfile \
             ./project
 
-      - name: Push docker image to gitHub registry
+      - name: Push docker image to github container registry
         id: push-docker-image
         run: |
           docker push ${{ env.IMAGE }}:latest
