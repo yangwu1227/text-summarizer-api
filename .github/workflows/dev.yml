@@ -11,7 +11,7 @@ on:
       - 'project/scripts/entrypoint.sh'
       - 'project/pyproject.toml'
       - 'project/pdm.lock'
-      - 'project/docker/prod.Dockerfile'
+      - 'project/docker/dev.Dockerfile'
       - '.github/workflows/dev.yml'
       
 env:
