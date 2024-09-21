@@ -13,10 +13,12 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     TESTING=0 \
     # Set the home directory and app home directory
     USER=app_user \
-    USER_GROUP=app_group \
-    HOME=/home/$USER \
+    USER_GROUP=app_group 
+
+
+ENV HOME=/home/$USER \
     # Working directory inside the container is set to 'project' under the home directory of the app user
-    PROJECT_ROOT_PATH=$HOME/project
+    PROJECT_ROOT_PATH=/home/$USER/project
 
 # Create an unprivileged user and group to run the application
 RUN addgroup --system $USER_GROUP && \
