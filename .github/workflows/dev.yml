@@ -28,7 +28,7 @@ jobs:
         id: checkout-repo
         uses: actions/checkout@v4
 
-      - name: Log in to gitHub container registry
+      - name: Log in to github container registry
         id: login-ghcr
         run: echo "${GH_PAT}" | docker login ghcr.io -u "${{ github.actor }}" --password-stdin
         env:
