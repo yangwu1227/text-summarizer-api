@@ -8,8 +8,8 @@ from sumy.summarizers.lsa import LsaSummarizer
 from sumy.summarizers.text_rank import TextRankSummarizer
 from sumy.utils import get_stop_words
 
-from app.models.pydantic import SummarizationMethod
-from app.models.tortoise import TextSummary
+from app.models.pydantic_model import SummarizationMethod
+from app.models.tortoise_model import TextSummary
 
 LANGUAGE = "english"
 stop_words = get_stop_words(LANGUAGE)

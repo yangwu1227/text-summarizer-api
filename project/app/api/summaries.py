@@ -4,12 +4,12 @@ from fastapi import APIRouter, BackgroundTasks, Path
 
 from app.api import crud
 from app.api.custom_exceptions import SummaryNotFoundException
-from app.models.pydantic import (
+from app.models.pydantic_model import (
     SummaryPayloadSchema,
     SummaryResponseSchema,
     SummaryUpdatePayloadSchema,
 )
-from app.models.tortoise import TextSummarySchema
+from app.models.tortoise_model import TextSummarySchema
 from app.summarizer import generate_summary
 
 router = APIRouter()
