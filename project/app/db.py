@@ -14,7 +14,7 @@ TORTOISE_ORM = {
     "connections": {"default": os.getenv("DATABASE_URL")},
     "apps": {
         "models": {
-            "models": ["app.models.tortoise", "aerich.models"],
+            "models": ["app.models.tortoise_model", "aerich.models"],
             "default_connection": "default",
         },
     },
@@ -46,7 +46,7 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     async with RegisterTortoise(
         app=app,
         db_url=os.environ.get("DATABASE_URL"),
-        modules={"models": ["app.models.tortoise"]},
+        modules={"models": ["app.models.tortoise_model"]},
         # Do not generate schema immediately for production
         generate_schemas=False,
         # True to add some automatic exception handlers for DoesNotExist & IntegrityError, not recommended for production

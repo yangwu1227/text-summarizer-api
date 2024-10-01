@@ -7,7 +7,7 @@ import pytest
 
 from app.api import crud, summaries
 from app.api.custom_exceptions import SummaryNotFoundException
-from app.models import pydantic
+from app.models import pydantic_model
 
 
 class TestSummaryUnit(object):
@@ -28,7 +28,7 @@ class TestSummaryUnit(object):
         monkeypatch.setattr(summaries, "generate_summary", mock_generate_summary)
 
         # Monkeypatch the crud function
-        async def mock_post(payload: pydantic.SummaryPayloadSchema) -> int:
+        async def mock_post(payload: pydantic_model.SummaryPayloadSchema) -> int:
             return 1
 
         monkeypatch.setattr(crud, "post", mock_post)
@@ -375,7 +375,7 @@ class TestSummaryUnit(object):
 
         # Simulate the returned dict of the put crud operation
         async def mock_put(
-            id: int, payload: pydantic.SummaryUpdatePayloadSchema
+            id: int, payload: pydantic_model.SummaryUpdatePayloadSchema
         ) -> Union[Dict, None]:
             return test_updated_response
 
@@ -468,7 +468,7 @@ class TestSummaryUnit(object):
 
         # Monkeypatch the put crud operation, which returns None when missing or invalid request is passed
         async def mock_put(
-            id: int, payload: pydantic.SummaryUpdatePayloadSchema
+            id: int, payload: pydantic_model.SummaryUpdatePayloadSchema
         ) -> Union[Dict, None]:
             return None
 

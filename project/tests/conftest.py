@@ -48,7 +48,7 @@ def test_app_with_db() -> TestClientGenerator:
     register_tortoise(
         app,
         db_url=os.environ.get("DATABASE_TEST_URL"),
-        modules={"models": ["app.models.tortoise"]},
+        modules={"models": ["app.models.tortoise_model"]},
         # True to generate schema immediately
         generate_schemas=True,
         add_exception_handlers=True,
