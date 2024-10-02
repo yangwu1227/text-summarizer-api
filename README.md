@@ -32,9 +32,9 @@ This project creates an asynchronous RESTful API built with Python, FastAPI, and
 - **Create a summary:** `POST /summaries/`
 
     ```bash
-    curl -X POST "https://text-summarizer-d918be4fb9c8.herokuapp.com/summaries/" \
-    -H "Content-Type: application/json" \
-    -d '{"url": "https://realpython.com/pointers-in-python/"}'
+    $ curl -X POST "https://textsummarizer.app/summaries/" \
+      -H "Content-Type: application/json" \
+      -d '{"url": "https://realpython.com/pointers-in-python/"}' | jq
     ```
 
     The payload also supports two additional optional parameters:
@@ -44,9 +44,9 @@ This project creates an asynchronous RESTful API built with Python, FastAPI, and
     Example request with all parameters:
 
     ```bash
-    curl -X POST "https://text-summarizer-d918be4fb9c8.herokuapp.com/summaries/" \
-    -H "Content-Type: application/json" \
-    -d '{"url": "https://realpython.com/pointers-in-python/", "summarization_method": "lex_rank", "sentence_count": 15}'
+    $ curl -X POST "https://textsummarizer.app/summaries/" \
+      -H "Content-Type: application/json" \
+      -d '{"url": "https://realpython.com/pointers-in-python/", "summarization_method": "lex_rank", "sentence_count": 15}' | jq
     ```
 
     For more information on the supported summarization algorithms, see the [sumy documentation](https://github.com/miso-belica/sumy/blob/main/docs/summarizators.md).
@@ -55,28 +55,28 @@ This project creates an asynchronous RESTful API built with Python, FastAPI, and
 
   ```bash
   # Format the response using jq
-  curl "https://text-summarizer-d918be4fb9c8.herokuapp.com/summaries/{id}/" | jq
+  $ curl "https://textsummarizer.app/summaries/{id}/" | jq
   ```
 
 - **Get all summaries:** `GET /summaries/`
 
   ```bash
   # Format the response using jq
-  curl "https://text-summarizer-d918be4fb9c8.herokuapp.com/summaries/" | jq
+  $ curl "https://textsummarizer.app/summaries/" | jq
   ```
 
 - **Update a summary:** `PUT /summaries/{id}/`
 
   ```bash
-  curl -X PUT "https://text-summarizer-d918be4fb9c8.herokuapp.com/summaries/{id}/" \
-  -H "Content-Type: application/json" \
-  -d '{"url": "https://realpython.com/pointers-in-python/", "update_summary": "Updated summary text"}'
+  $ curl -X PUT "https://textsummarizer.app/summaries/{id}/" \
+    -H "Content-Type: application/json" \
+    -d '{"url": "https://realpython.com/pointers-in-python/", "update_summary": "Updated summary text"}' | jq
   ```
 
 - **Delete a summary:** `DELETE /summaries/{id}/`
 
   ```bash
-  curl -X DELETE "https://text-summarizer-d918be4fb9c8.herokuapp.com/summaries/{id}/" 
+  $ curl -X DELETE "https://textsummarizer.app/summaries/{id}/" | jq
   ```
 
 ## Deployment
