@@ -13,7 +13,7 @@ def create_app() -> FastAPI:
     application = FastAPI(
         title="text-summarizer",
         lifespan=lifespan,
-        docs_url=os.getenv("ENABLE_DOCS", None),
+        docs_url=os.getenv("DOCS_URL", None),
         redoc_url=None,
     )
     application.include_router(ping.router)
