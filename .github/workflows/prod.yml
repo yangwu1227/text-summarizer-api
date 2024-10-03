@@ -1,4 +1,4 @@
-name: CI/CD Pipeline
+name: Build Prod Image and Deploy to Heroku
 
 on: 
   push:
@@ -10,7 +10,7 @@ on:
       - 'project/pyproject.toml'
       - 'project/pdm.lock'
       - 'project/docker/prod.Dockerfile'
-      - '.github/workflows/ci_cd.yml'
+      - '.github/workflows/prod.yml'
       
 env:
   MODE: prod
