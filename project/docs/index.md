@@ -109,7 +109,7 @@ The database migrations are managed using [aerich](https://github.com/tortoise/a
 To set up the initial config file and generate the root migrate location:
 
 ```bash
-$ docker exec <service-name> aerich init -t app.db.TORTOISE_ORM
+$ docker compose exec <service-name> aerich init -t app.db.TORTOISE_ORM
 ```
 
 The `-t` flag specifies the module path to the Tortoise-ORM settings inside the `app.db` module. This will add a `tool.aerich` section to the `pyproject.toml` file.
@@ -119,7 +119,7 @@ The `-t` flag specifies the module path to the Tortoise-ORM settings inside the 
 To initialize the database:
 
 ```bash
-$ docker exec <service-name> aerich init-db
+$ docker compose exec <service-name> aerich init-db
 ```
 
 This will create the tables in the database based on the models defined in `app/models/` along with the first migration file in the `migrations/` directory.
@@ -131,13 +131,13 @@ From this point on, since the local `migrations/` directory is synced with the `
 1. In development mode, update the model in `app/models/` and run the following command to generate a new migration:
 
 ```bash
-$ docker exec <service-name> aerich migrate --name <migration-name>
+$ docker compose exec <service-name> aerich migrate --name <migration-name>
 ```
 
 2. Apply the migration in development mode:
 
 ```bash
-$ docker exec <service-name> aerich upgrade
+$ docker compose exec <service-name> aerich upgrade
 ```
 
 3. Run tests and any other necessary checks.
@@ -156,10 +156,10 @@ See the aerich's [usage](https://github.com/tortoise/aerich?tab=readme-ov-file#u
 
 ## PSQL
 
-The PostgreSQL database can be accessed using [psql](https://www.postgresql.org/docs/current/app-psql.html), a terminal-based front-end to PostgreSQL.
+The PostgreSQL database within the docker container can be accessed using [psql](https://www.postgresql.org/docs/current/app-psql.html), a terminal-based front-end to PostgreSQL.
 
 ```bash
-$ docker exec -it <service-name> psql -U postgres
+$ docker compose exec -it <service-name> psql -U <username>
 ```
 
 ### Connect 
