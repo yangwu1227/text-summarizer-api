@@ -12,15 +12,16 @@ This project creates an asynchronous RESTful API built with Python, FastAPI, and
 - **FastAPI**: Provides asynchronous API endpoints.
 - **PostgreSQL**: Used as the database for storing summaries.
 - **Tortoise ORM & Aerich**: ORM for database models, and Aerich for handling migrations.
+- **Redis**: Database store used for rate limiting.
 - **GitHub Actions CI**: Automated testing, Docker builds, and pushing images to GitHub Packages.
 - **Heroku Deployment**: FastAPI app and PostgreSQL running in Docker containers.
 
 ## Project Structure
 
 ```bash
-├── compose.yml                    # Docker Compose configuration for local development
+├── compose.yml                    # Docker compose configuration for local development
 └── project
-    ├── app/                       # FastAPI app, Routes, Tortoise-ORM & Pydantic models
+    ├── app/                       # Fastapi app, routes, tortoise-orm & pydantic models, rate limiting
     ├── docker/                    # Dockerfiles and ignore files for prod and dev environments
     ├── migrations/                # Database migration files
     ├── scripts/                   # Shell scripts for building and deploying
@@ -29,7 +30,7 @@ This project creates an asynchronous RESTful API built with Python, FastAPI, and
 
 ## API Endpoints
 
-- **Create a summary:** `POST /summaries/`
+- **Create a summary:** `POST /summaries/` (Rate-limited to 5 requests per minute)
 
     ```bash
     curl -X POST "https://textsummarizer.app/summaries/" \
@@ -51,14 +52,14 @@ This project creates an asynchronous RESTful API built with Python, FastAPI, and
 
     For more information on the supported summarization algorithms, see the [sumy documentation](https://github.com/miso-belica/sumy/blob/main/docs/summarizators.md).
 
-- **Get a summary:** `GET /summaries/{id}/`
+- **Get a summary:** `GET /summaries/{id}/` (Rate-limited to 3 requests per minute)
 
   ```bash
   # Format the response using jq
   curl "https://textsummarizer.app/summaries/{id}/" | jq
   ```
 
-- **Get all summaries:** `GET /summaries/`
+- **Get all summaries:** `GET /summaries/` (Rate-limited to 3 requests per minute)
 
   ```bash
   # Format the response using jq
