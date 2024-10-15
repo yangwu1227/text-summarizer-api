@@ -89,7 +89,7 @@ The application is deployed on Heroku using Docker. The `scripts/` directory con
 
 3. `deploy_heroku.sh`: Automates deployment to Heroku. Logs into the Heroku container registry, provisions a PostgreSQL database if needed, pushes the Docker image, releases it, and applies database migrations using [Aerich](https://github.com/tortoise/aerich). This is only used for the very first deployment, as subsequent deployments are automated via the CI-CD pipeline.
 
-4. `entrypoint.sh`: Waits for PostgreSQL to be ready before starting the FastAPI application. Used in the development container to ensure the app connects to the database only after it is fully initialized.
+4. `entrypoint.sh`: Waits for PostgreSQL and Redis to be ready before starting the FastAPI application. Used in the development container to ensure the app connects to the database only after it is fully initialized. This also ensure proper teardown of the database and the Redis instance.
 
 5. `platform_selection.sh`: Prompts the user to select a target platform for Docker image builds: `amd64`, `arm64`, or both. Sourced by other build scripts to standardize platform selection.
 
