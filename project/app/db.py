@@ -51,7 +51,7 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     """
     # Initialize Redis for rate limiting
     redis_endpoint = os.getenv("REDIS_ENDPOINT")
-    redis_encoded_password = quote(os.getenv("REDIS_PASSWORD"), safe="") # type: ignore[arg-type]
+    redis_encoded_password = quote(os.getenv("REDIS_PASSWORD"), safe="")  # type: ignore[arg-type]
     redis_url = f"redis://:{redis_encoded_password}@{redis_endpoint}"
     # The usename, password, hostname, etc. are all passed through urllib.parse.unquote internally
     redis_connection = redis.from_url(redis_url, encoding="utf8")  # type: ignore[no-untyped-call]
