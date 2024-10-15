@@ -34,6 +34,21 @@ jobs:
         env:
           GH_PAT: ${{ secrets.GH_PAT }}
 
+      - name: Create Docker network
+        id: create-docker-network
+        run: docker network create test-network
+
+      - name: Start redis container
+        id: start-redis-container
+        run: |
+          docker run \
+            --name web-redis \
+            --network test-network \
+            --detach \
+            --expose 6379 \
+            redis:bookworm \
+            redis-server --requirepass redis
+
       - name: Pull existing docker image
         id: pull-existing-docker-image
         run: |
@@ -58,11 +73,14 @@ jobs:
         run: |
           docker run \
             --name test-container \
+            --network test-network \
             --detach \
             -e PORT=8765 \
             -e ENVIRONMENT=dev \
             -e DATABASE_URL="${DB_URL}" \
             -e DATABASE_TEST_URL="${DB_URL}" \
+            -e REDIS_ENDPOINT=web-redis:6379 \
+            -e REDIS_PASSWORD=redis \
             -p 5003:8765 \
             ${{ env.IMAGE }}:latest
         env:

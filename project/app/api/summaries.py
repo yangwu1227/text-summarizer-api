@@ -1,9 +1,10 @@
 from typing import Annotated, List
 
-from fastapi import APIRouter, BackgroundTasks, Path
+from fastapi import APIRouter, BackgroundTasks, Depends, Path
 
 from app.api import crud
 from app.api.custom_exceptions import SummaryNotFoundException
+from app.custom_rate_limiter import CustomRateLimiter
 from app.models.pydantic_model import (
     SummaryPayloadSchema,
     SummaryResponseSchema,
@@ -15,7 +16,12 @@ from app.summarizer import generate_summary
 router = APIRouter()
 
 
-@router.post("/", response_model=SummaryResponseSchema, status_code=201)
+@router.post(
+    "/",
+    response_model=SummaryResponseSchema,
+    status_code=201,
+    dependencies=[Depends(CustomRateLimiter(times=5, seconds=60))],
+)
 async def create_summary(
     payload: SummaryPayloadSchema, background_tasks: BackgroundTasks
 ) -> SummaryResponseSchema:
@@ -52,7 +58,11 @@ async def create_summary(
     return response
 
 
-@router.get("/{id}/", response_model=TextSummarySchema)
+@router.get(
+    "/{id}/",
+    response_model=TextSummarySchema,
+    dependencies=[Depends(CustomRateLimiter(times=3, seconds=60))],
+)
 async def read_summary(id: Annotated[int, Path(title="The ID of the text summary to query", gt=0)]) -> TextSummarySchema:  # type: ignore
     """
     Retrieve a single summary based on its ID (i.e., primary key).
@@ -79,7 +89,11 @@ async def read_summary(id: Annotated[int, Path(title="The ID of the text summary
     return summary
 
 
-@router.get("/", response_model=List[TextSummarySchema])  # type: ignore
+@router.get(
+    "/",
+    response_model=List[TextSummarySchema],  # type: ignore
+    dependencies=[Depends(CustomRateLimiter(times=3, seconds=60))],
+)
 async def read_all_summaries() -> List[TextSummarySchema]:  # type: ignore
     """
     Retrieve all summaries.
@@ -92,7 +106,10 @@ async def read_all_summaries() -> List[TextSummarySchema]:  # type: ignore
     return await crud.get_all()
 
 
-@router.delete("/{id}/", response_model=TextSummarySchema)
+@router.delete(
+    "/{id}/",
+    response_model=TextSummarySchema,
+)
 async def remove_summary(
     id: Annotated[int, Path(title="The ID of the text summary to delete", gt=0)]
 ) -> TextSummarySchema:  # type: ignore
@@ -124,7 +141,10 @@ async def remove_summary(
     return summary
 
 
-@router.put("/{id}/", response_model=TextSummarySchema)
+@router.put(
+    "/{id}/",
+    response_model=TextSummarySchema,
+)
 async def update_summary(
     id: Annotated[int, Path(title="The ID of the text summary to update", gt=0)],
     payload: SummaryUpdatePayloadSchema,
