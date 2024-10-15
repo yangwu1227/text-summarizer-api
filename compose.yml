@@ -21,6 +21,11 @@ services:
       - DOCS_URL=/docs
       - DATABASE_URL=postgres://postgres:postgres@web-db:5432/web_dev       
       - DATABASE_TEST_URL=postgres://postgres:postgres@web-db:5432/web_test  
+      - REDIS_ENDPOINT=web-redis:6379
+      - REDIS_PASSWORD=redis
+    depends_on:
+      - web-db
+      - web-redis
 
   web-db:
     build:
@@ -32,3 +37,10 @@ services:
     environment:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=postgres
+
+  web-redis:
+    image: redis:bookworm # This should match the debian version used in dev.Dockerfile and db.Dockerfile 
+    container_name: redis
+    expose:
+      - 6379 # Expose redis port for internal docker network communication between services
+    command: ["redis-server", "--requirepass", "redis"]
