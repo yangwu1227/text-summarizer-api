@@ -13,6 +13,8 @@ dependencies = [
     "lxml-html-clean>=0.2.2",
     "numpy>=2.1.1",
     "setuptools>=75.0.0",
+    "redis[hiredis]>=5.1.1",
+    "fastapi-limiter>=0.1.6",
 ]
 requires-python = ">=3.11"
 readme = "README.md"
@@ -81,4 +83,5 @@ filterwarnings = [
     "ignore::DeprecationWarning:httpx._content",
     "ignore::DeprecationWarning:app.main",
     "ignore::DeprecationWarning:breadability",
+    "ignore::DeprecationWarning:fastapi_limiter",
 ]
