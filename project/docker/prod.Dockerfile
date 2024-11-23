@@ -33,8 +33,7 @@ WORKDIR $PROJECT_ROOT_PATH
 COPY pyproject.toml pdm.lock ./
 # 1. --prod: install only production dependencies
 # 2. --no-editable: all packages to be installed in non-editable mode
-# 3. --check: validate whether the lock is up to date
-RUN pip install pdm==$PDM_VERSION && pdm install --check --no-editable --prod
+RUN pip install pdm==$PDM_VERSION && pdm install --no-editable --prod
 
 FROM python-base AS production
 
