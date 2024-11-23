@@ -20,7 +20,7 @@ COPY pyproject.toml pdm.lock ./
 # 1. --G test: install packages in the test group in addition to the default production dependencies
 # 2. --no-editable: all packages to be installed in non-editable mode
 # 3. --check: validate whether the lock is up to date
-RUN pip install pdm==$PDM_VERSION && pdm install --check --no-editable -G test -G lint
+RUN pip install pdm==$PDM_VERSION && pdm install --check --no-editable -G test -G lint-fmt
 
 FROM python-base AS development
 
