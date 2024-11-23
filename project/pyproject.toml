@@ -22,7 +22,7 @@ readme = "README.md"
 [tool.pdm]
 distribution = false
 
-[tool.pdm.dev-dependencies]
+[dependency-groups]
 test = [
     "pytest>=8.3.2",
     "pytest-cov>=5.0.0",
