@@ -35,7 +35,7 @@ lint-fmt = [
     "flake8>=7.1.1",
     "black>=24.8.0",
     "isort>=5.13.2",
-    "mypy>=1.11.2",
+    "mypy>=1.13.0",
 ]
 docs = [
     "mkdocs-material>=9.5.31",

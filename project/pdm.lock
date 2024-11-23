@@ -5,7 +5,7 @@
 groups = ["default", "docs", "lint-fmt", "notebook", "test"]
 strategy = ["inherit_metadata"]
 lock_version = "4.5.0"
-content_hash = "sha256:bb63707d8aa2bb5850710410d31dc16940ab1cc4e592775420a2a043b5c431fe"
+content_hash = "sha256:61c4a1878e0ff91c75b06ba2569586c888560535f972b7131c4b5389f776dd5d"
 
 [[metadata.targets]]
 requires_python = ">=3.11"
