@@ -63,7 +63,9 @@ async def create_summary(
     response_model=TextSummarySchema,
     dependencies=[Depends(CustomRateLimiter(times=3, seconds=60))],
 )
-async def read_summary(id: Annotated[int, Path(title="The ID of the text summary to query", gt=0)]) -> TextSummarySchema:  # type: ignore
+async def read_summary(
+    id: Annotated[int, Path(title="The ID of the text summary to query", gt=0)],
+) -> TextSummarySchema:  # type: ignore
     """
     Retrieve a single summary based on its ID (i.e., primary key).
 
@@ -111,7 +113,7 @@ async def read_all_summaries() -> List[TextSummarySchema]:  # type: ignore
     response_model=TextSummarySchema,
 )
 async def remove_summary(
-    id: Annotated[int, Path(title="The ID of the text summary to delete", gt=0)]
+    id: Annotated[int, Path(title="The ID of the text summary to delete", gt=0)],
 ) -> TextSummarySchema:  # type: ignore
     """
     Delete a single summary based on its ID (i.e., primary key).

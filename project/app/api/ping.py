@@ -8,7 +8,9 @@ router = APIRouter()
 
 
 @router.get("/ping")
-async def pong(settings: Annotated[Settings, Depends(get_settings)]) -> Dict[str, Union[str, bool]]:
+async def pong(
+    settings: Annotated[Settings, Depends(get_settings)],
+) -> Dict[str, Union[str, bool]]:
     """
     A health check endpoint that returns a simple "ping" response.
     """

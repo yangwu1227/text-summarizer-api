@@ -31,7 +31,11 @@ class TestSummary(object):
             # Default values
             (
                 {"url": "https://yahoo.com/"},
-                {"url": "https://yahoo.com/", "summarization_method": "lsa", "sentence_count": 10},
+                {
+                    "url": "https://yahoo.com/",
+                    "summarization_method": "lsa",
+                    "sentence_count": 10,
+                },
             ),
         ],
         scope="function",
@@ -113,7 +117,10 @@ class TestSummary(object):
             ),
             # An invalid summarizer
             (
-                {"url": "https://yahoo.com/", "summarization_method": "invalid_summarizer"},
+                {
+                    "url": "https://yahoo.com/",
+                    "summarization_method": "invalid_summarizer",
+                },
                 # Client-side error: Unprocessable Entity
                 422,
                 {

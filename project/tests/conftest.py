@@ -16,7 +16,9 @@ def override_get_settings() -> Settings:
     """
     Override the get_settings dependency to use the test database URL.
     """
-    return Settings(testing=True, database_url=os.environ.get("DATABASE_TEST_URL", None))  # type: ignore
+    return Settings(
+        testing=True, database_url=os.environ.get("DATABASE_TEST_URL", None)
+    )  # type: ignore
 
 
 @pytest.fixture(scope="module")
