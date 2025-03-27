@@ -99,7 +99,10 @@ class TestSummaryUnit(object):
             ),
             # An invalid summarizer
             (
-                {"url": "https://yahoo.com/", "summarization_method": "invalid_summarizer"},
+                {
+                    "url": "https://yahoo.com/",
+                    "summarization_method": "invalid_summarizer",
+                },
                 # Client-side error: Unprocessable Entity
                 422,
                 {
@@ -360,7 +363,10 @@ class TestSummaryUnit(object):
         Test for update_summary on the happy path.
         """
         # Test SummaryUpdatePayloadSchema
-        test_update_payload = {"url": "https://yahoo.com/", "update_summary": "Updated summary"}
+        test_update_payload = {
+            "url": "https://yahoo.com/",
+            "update_summary": "Updated summary",
+        }
         test_summary_id = 12
         test_updated_response = {
             "id": test_summary_id,
@@ -460,7 +466,13 @@ class TestSummaryUnit(object):
         scope="function",
     )
     def test_update_summary_invalid_id_or_request_unit(
-        self, test_app, monkeypatch, id, payload, expected_status_code, expected_response
+        self,
+        test_app,
+        monkeypatch,
+        id,
+        payload,
+        expected_status_code,
+        expected_response,
     ) -> None:
         """
         Test for update_summary given invalid id or request body with missing fields.

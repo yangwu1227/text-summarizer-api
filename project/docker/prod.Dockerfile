@@ -5,7 +5,7 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     # Ensure python I/O is unbuffered so that log messages are flushed to the stream
     PYTHONUNBUFFERED=1 \
     # PDM version
-    PDM_VERSION=2.18.2 \
+    PDM_VERSION=2.22.4 \
     # Disable pdm update check
     PDM_CHECK_UPDATE=0 \
     # Environment and testing are set to prod and 0 respectively
@@ -33,8 +33,7 @@ WORKDIR $PROJECT_ROOT_PATH
 COPY pyproject.toml pdm.lock ./
 # 1. --prod: install only production dependencies
 # 2. --no-editable: all packages to be installed in non-editable mode
-# 3. --check: check if the project is consistent with the lock file
-RUN pip install pdm==$PDM_VERSION && pdm install --check --no-editable --prod
+RUN pip install pdm==$PDM_VERSION && pdm sync --no-editable --prod
 
 FROM python-base AS production
 

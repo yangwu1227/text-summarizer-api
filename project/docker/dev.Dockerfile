@@ -7,7 +7,7 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     # Working directory inside the container
     PROJECT_ROOT_PATH=/opt/project \
     # PDM version
-    PDM_VERSION=2.18.2 \
+    PDM_VERSION=2.22.4 \
     # Disable pdm update check
     PDM_CHECK_UPDATE=0
 
@@ -19,8 +19,7 @@ WORKDIR $PROJECT_ROOT_PATH
 COPY pyproject.toml pdm.lock ./
 # 1. --G test: install packages in the test group in addition to the default production dependencies
 # 2. --no-editable: all packages to be installed in non-editable mode
-# 3. --check: check if the project is consistent with the lock file
-RUN pip install pdm==$PDM_VERSION && pdm install --check --no-editable -G test -G lint-fmt
+RUN pip install pdm==$PDM_VERSION && pdm sync --no-editable -G test -G lint-fmt
 
 FROM python-base AS development
 
